@@ -1,0 +1,3669 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>D3: Stack layout stacked bar chart, anchored at bottom</title>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.3/d3-legend.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tinycolor/1.4.1/tinycolor.min.js"></script>
+        <style type="text/css">
+            #title, #notes {
+                width: 1023px;
+                margin: 0 auto;
+                display: block;
+                vertical-align: top;
+                background-color: #e0d0b0;
+            }
+            #notes {
+                padding-bottom: 15px;
+            }
+            h1 {
+                margin: 0 0 0 28.7px;
+                font-size: 87px;
+                font-family: "Impact";
+                display: inline;
+            }
+            h2 {
+                margin: -18px 0 0 727px;
+                font-size: 21px;
+                font-family: "Palatino Linotype";
+            }
+            h3, p {
+                margin: 0 40px 0 28.7px;
+            }
+            h3, p {
+                font-family: "Palatino Linotye";
+            }
+            a {
+                color: #406098;
+            }
+            svg {
+                background-color: #e0d0b0;
+                shape-rendering: geometricPrecision;
+                vertical-align: top;
+                display: block;
+                margin: 0 auto;
+            }
+            rect {
+                shape-rendering: crispEdges;
+            }
+            #tooltip {
+                position: absolute;
+                width: auto;
+                height: auto;
+                padding: 3px;
+                border-style: solid;
+                border-width: 3px;
+                border-color: #e0d0b0;
+                background-color: rgba(255, 255, 255, 0.85);
+                -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+                pointer-events: none;
+            }
+
+            table {
+                text-align: right;
+            }
+            th, .legendTitle {
+                font-size: 18px;
+                font-weight: bold;
+                text-decoration: underline;
+                font-family: "Palatino Linotype";
+            }
+            th {
+                white-space: nowrap;
+            }
+            td {
+                margin: 0;
+                font-family: Helvetica;
+                font-size: 18px;
+                font-weight: bold;
+                line-height: 18px;
+            }
+            .presPercentage, .dash {
+                width: 1px;
+                white-space: nowrap;
+            }
+
+            .x.axis {
+                font-size: 9px;
+            }
+
+            .axis path {
+                display: none;
+                stroke-width: 0;
+            }
+            .axis line {
+                stroke-opacity: 0.3;
+            }
+
+            .axis line, .grid line {
+                stroke: white;
+            }
+            .grid6 line, .grid7 line {
+                stroke-opacity: 0.5;
+            }
+            .grid1 line, .grid2 line, .grid3 line {
+                stroke-opacity: 0.3;
+            }
+            .grid4 line, .grid5 line {
+                stroke-opacity: 0.3;
+            }
+            .grid path {
+                stroke-width: 0;
+            }
+            .grid {
+                pointer-events: none;
+            }
+
+            .linePop, .lineLifeExp, .lineEmployed {
+                fill: none;
+                stroke: #eeeeee;
+            }
+            .linePop {
+                stroke-width: 0;
+            }
+            .lineLifeExp {
+                stroke-width: 2;
+                stroke-dasharray: 5, 5;
+            }
+            .lineEmployed {
+                stroke-width: 2;
+            }
+
+            .legend {
+                font-family: Helvetica;
+                font-size: 14px;
+            }
+
+            .linePop, .lineLifeExp, .lineEmployed, .others, .focus {
+                pointer-events: none;
+            }
+
+            .focus {
+                font-size: 11px;
+            }
+
+            .lineGDP {
+                fill: none;
+                stroke: #B22222;
+                stroke-width: 3;
+            }
+            .lineGDPPerEmployed {
+                fill: none;
+                stroke: #406098;
+                stroke-width: 2;
+            }
+            .lineAvgWage {
+                fill: none;
+                stroke: #99AC00;
+                stroke-width: 2;
+            }
+
+            .cloudy {
+                fill: #496066;
+                opacity: 0.7;
+                font-size: 16px;
+                font-family: serif;
+            }
+            .tick text {
+                font-family: sans-serif;
+            }
+
+            .focus circle {
+                fill: white;
+                stroke: #2E2E2E;
+            }
+
+            .focusTotalTrade text,
+            .focusTotalExport text,
+            .focusTotalOccu text,
+            .focusKilled text {
+                text-decoration: underline;
+            }
+
+            .boldTick {
+                stroke: black;
+                stroke-width: 1px;
+            }
+
+            .highl {
+                stroke-opacity: 1 !important;
+            }
+
+            .back {
+                stroke: #ddccaa;
+                stroke-width: 3.5px;
+                opacity: 1;
+            }
+
+            .lineTradeRu, .lineAgriWoodExport {
+                stroke-width: 2;
+                fill: none;
+            }
+            .lineTradeRu {
+                stroke: #B22222;
+            }
+            .lineAgriWoodExport {
+                stroke: #99AC00;
+            }
+
+            .lineElectroR, .lineElectroG, .lineElectroP, .lineElectroU,
+            .lineElectroC, .lineElectroI {
+                stroke-width: 3;
+                fill: none;
+            }
+
+            .lineElectroR {
+                stroke: #B22222;
+            }
+
+            .lineElectroG {
+                stroke: #406098;
+            }
+
+            .lineElectroP {
+                stroke: #3E444B;
+            }
+
+            .lineElectroU {
+                stroke: #7d8b07;
+            }
+
+            .lineElectroC {
+                stroke: #DB0A5B;
+            }
+
+            .lineElectroI {
+                stroke: #1B774A;
+            }
+
+            .lineElectroBR, .lineElectroBC, .lineElectroBI, .lineElectroBU {
+                stroke-width: 12;
+                fill: none;
+            }
+
+            .lineElectroBR {
+                stroke: #B22222;
+            }
+
+            .lineElectroBC {
+                stroke: #DB0A5B;
+            }
+
+            .lineElectroBI {
+                stroke: #1B774A;
+            }
+
+            .lineElectroBU {
+                stroke: #B0C500;
+            }
+
+            .lineKilled {
+                fill: none;
+                stroke-width: 2;
+                stroke: #2e2e2e;
+            }
+
+            .note {
+                font-family: Helvetica;
+                font-size: 13px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="title">
+            <h1>Історія Сучасної України</h1>
+            <h2>в Синхронних Графіках</h2>
+        </div>
+        <div id="tooltip">
+            <div id="mobile-legend"></div>
+        </div>
+        <div id="svgs"></div>
+        <div id="notes">
+            <h3>Загальні примітки</h3>
+            <p>• Дані правильні для років, а в просторі між ними це інтерполяція. Єдиний вийняток це сегменти населення після 2014 року, де ні роки, ні простір між ними правильними не назвеш. Рухи населення від час війни виміряти непросто.</p>
+            <p>• Падіння ВВП та інших індикаторів після 2014 року включає як втрату контролю над ресурсами на окупованій території, так і "загальний спад" від часткового обрізання економічних зв'язків з Росією. Єдиний вийняток це "Люди", де я вирішив показати що відбувається більш детально.</p>
+            <h3>Джерела</h3>
+            <p><em>Люди</em>: Держстат, Міністерство з питань тимчасово окупованих територій та внутрішньо переміщених осіб України, Міністерство соціальної політики України.</p>
+            <p><em>Економіка</em>: Держстат, Світовій Банк і власні розрахунки, пізніше випадково підтверджені даними з Міжнародної Організації Праці.</p>
+            <p><em>Торгівля, Експорт</em>: Дані з "Атласу Економічної Складності" Центру Міжнародного Розвитку при Гарвардському Університеті, які майже ідентичні даним з UN Comtrade, але не зовсім.</p>
+            <p><em>Електрика</em>: Міжнародне Енергетичне Агентство, Держстат.</p>
+            <p><em>Політика, Відносини з Росією</em>: Різноманітні джерела. Книжки, офіційні заяви, новини і моя суб'єктивна інтерпретація політичних подій.</p>
+            <h3>Авторство</h3>
+            <p>Зробив <a href="https://twitter.com/a_kombinator">A</a>, використовуючи <a href="https://d3js.org/">d3</a>, <a href="http://d3-legend.susielu.com/">d3-legend</a> і <a href="https://github.com/bgrins/TinyColor">TinyColor</a>.</p>
+            <p>Це рання версія, в якій можна багато чого виправити і покращити, особливо під капотом, тому шліть свої скарги і пропозиції.</p>
+        </div>
+        <script type="text/javascript">
+            var w = 1023,
+                h = 200,
+                padding = 20,
+                paddingL = 66,
+                paddingR = 347,
+                cloudL = paddingL/2.3-4,
+                cloudR = (w-paddingR+paddingL/1.5) + 5,
+                years = Array.apply(null, Array(2018-1990)).map(
+                    function(e, i) {
+                        return new Date((1990+i).toString());
+                }),
+
+                colors = {
+                    "black": "#2E2E2E",
+                    "red": "#B22222",
+                    "blue": "#406098",
+                    "orange": "#99AC00",
+                    "lgrey": "#496066",
+                    "green": "#1B774A",
+                    "purple": "#DB0A5B",
+                    "brown": "#804600",
+                    "grey": "#3E444B",
+                    "white": "#eeeeee"
+                },
+                dSat = 10,
+                dLight = 5,
+
+                isMobile = false;
+                if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+                    isMobile = true;
+                }
+
+            //POLITICS
+
+            var parliaments = [
+                {black: 0, red: 53.1 , blue: 0, lgrey: 19.1, orange: 27.8},
+                {black: 0, red: 17.8, blue: 58.0, lgrey: 18.6, orange: 5.6},
+                {black: 0, red: 26.9, blue: 30.7, lgrey: 32.2, orange: 10.2},
+                {black: 0, red: 14.5, blue: 51.1, lgrey: 2.7, orange: 31.7},
+                {black: 0, red: 4.66, blue: 48.67, lgrey: 0, orange: 46.67},
+                {black: 0, red: 6.0, blue: 43.3333, lgrey: 0, orange: 50.6666},
+                {black: 0, red: 7.10, blue: 41.10, lgrey: 12.21, orange: 39.6},
+                {black: 6, red: 0, blue: 6.4444, lgrey: 23.5555, orange: 64}
+            ];
+
+            var periods = [
+                "1990-1994", "1994-1998", "1998-2002", "2002-2006", "2006-2007",
+                "2007-2012", "2012-2014", "2014- "
+            ];
+
+            var blacks = [[], [], [], [], [], [], [], [
+                "Вакантні; під російською окупацією — 27/450 ~ 6.00%"
+            ]];
+            var reds = [
+                [
+                    "\"Група 239\" — 239/450 ~ 53.1%"
+                ],
+                [
+                    "Фракція \"Комуністи України\" — 80/450 ~ 17.77%"
+                ],
+                [
+                    "Комуністична Партія України — 121/450 ~ 26.90%"
+                ],
+                [
+                    "Комуністична Партія України — 65/450 ~ 14.44%"
+                ],
+                [
+                    "Комуністична Партія України — 21/450 ~ 4.66%"
+                ],
+                [
+                    "Комуністична Партія України — 27/450 ~ 6.00%"
+                ],
+                [
+                    "Комуністична Партія України — 32/450 ~ 7.11%"
+                ],
+                []
+            ];
+            var blues = [
+                [],
+                [
+                    "Фракція \"Соціалістичних і Селянських партій\" — 40/450 ~ 8.88%",
+                    "Фракція \"Аграрної Партії України\" — 27/450 ~ 6.00%",
+                    "Фракція \"Партії Регіонального Відродження України\" — 32/450 ~ 7.10%",
+                    "Група \"Соціально-ринковий вибір\" — 25/450 ~ 5.55%",
+                    "Група \"Вперед, Україна!\" — 30/450 ~ 6.66%",
+                    "Група \"Єдність\" — 32/450 ~ 7.11%",
+                    "Група \"Незалежні\" — 25/450 ~ 5.55%",
+                    "Група \"Конституційний центр\" — 50/450 ~ 11.11%"
+                ],
+                [
+                    "Прогресивна Соціалістична Партія України — 16/450 ~ 3.55%",
+                    "Блок Соціалістичної і Селянської Партій України — 34/450 ~ 7.55%",
+                    "Соціал-Демократична Партія України(об'єднана) — 17/450 ~ 3.77%",
+                    "Зелена Партія України — 19/450 ~ 4.22%",
+                    "Всеукраїнське об'єднання \"Громада\" — 24/450 ~ 5.33%",
+                    "Народно-Демократична Партія — 28/450 ~ 6.22%"
+
+                ],
+                [
+                    "Блок \"За Єдину Україну\" — 175/450 ~ 38.88%",
+                    "Соціал-Демократична Партія України(об'єднана) — 31/450 ~ 6.88%",
+                    "Соціалістична Партія України — 22/450 ~ 4.88%"
+                ],
+                [
+                    "Партія Регіонів — 186/450 ~ 41.33%",
+                    "Соціалістична Партія України — 33/450 ~ 7.33%"
+                ],
+                [
+                    "Партія Регіонів — 175/450 ~ 38.88%",
+                    "Блок Литвина — 20/450 ~ 4.44%"
+                ],
+                ["Партія Регіонів — 185/450 ~ 41.11%"],
+                ["Опозиційний Блок — 29/450 ~ 6.44%"]
+            ];
+            var oranges = [
+                ["Демократичний блок — 125/450 ~ 27.8%"],
+                ["Фракція \"Рух - Народ за Україну\" — 25/450 ~ 5.55%"],
+                ["Народний Рух України — 46/450 ~ 10.22%"],
+                [
+                    "Блок Юлії Тимошенко — 23/450 ~ 5.11%",
+                    "Блок \"Наша Україна\" — 119/450 ~ 26.44%"
+                ],
+                [
+                    "Блок Юлії Тимошенко — 129/450 ~ 28.66%",
+                    "Блок \"Наша Україна\" — 81/450 ~ 18.00%"
+                ],
+                [
+                    "Блок Юлії Тимошенко — 156/450 ~ 34.66%",
+                    "Блок \"Наша Україна - Народна Самооборона\" — 72/450 ~ 16.00%"
+                ],
+                [
+                    "Батьківщина — 101/450 ~ 22.44%",
+                    "УДАР — 40/450 ~ 8.88%",
+                    "ВО \"Свобода\" — 37/450 ~ 8.22%"
+                ],
+                [
+                    "Радикальна Партія — 22/450 ~ 4.88%",
+                    "Батьківщина — 19/450 ~ 4.22%",
+                    "Блок Петра Порошенка — 132/450 ~ 29.33%",
+                    "Народний Фронт — 82/450 ~ 18.22%",
+                    "Об'єднання \"Самопоміч\" — 33/450 ~ 7.33%"
+                ]
+            ];
+            var lgreys = [
+                ["Інші — 86/450 ~ 19.1%"],
+                ["Інші — 45/450 ~ 10.00%", "Вакантні — 39/450 ~ 8.6%"],
+                ["Інші — 140/450 ~ 31.11%", "Вакантні — 5/450 ~ 1.11%"],
+                ["Інші — 12/450 ~ 2.66%", "Вакантні — 3/450 ~ 0.66%"],
+                [],
+                [],
+                ["Інші — 55/450 ~ 12.22%"],
+                ["Інші — 106/450 ~ 23.55%"]
+            ];
+
+            var wths = [
+                4.0/27, 4.0/27, 4.0/27, 4.0/27, 1.0/27, 5.0/27, 2.0/27, 3.0/27
+            ].map(function(e) {
+                return e * (w - paddingL - paddingR);
+            })
+            var base = paddingL;
+
+            var stackParl = d3.stack()
+                .keys(["lgrey", "orange", "blue", "red", "black"])(parliaments);
+
+            var timeScale = d3.scaleTime()
+                .domain([new Date("1990"), new Date("2017")])
+                .range([paddingL, w-paddingR]);
+            var xAxis = d3.axisTop(timeScale);
+            var xAxis2 = d3.axisTop(timeScale);
+            var xAxis3 = d3.axisTop(timeScale);
+            var xAxis4 = d3.axisTop(timeScale);
+            var xAxis5 = d3.axisTop(timeScale);
+            var xAxis6 = d3.axisTop(timeScale);
+            var xAxis7 = d3.axisTop(timeScale);
+            var xAxis8 = d3.axisBottom(timeScale);
+            
+            var parlSeatsScale = d3.scaleLinear()
+                .domain([0, 100])
+                .range([h-padding, padding]);
+            
+            var yAxis = d3.axisLeft(d3.scaleLinear()
+                .domain([450, 0])
+                .range([h-padding, padding])
+            );
+            var yAxisMirror = d3.axisRight(d3.scaleLinear()
+                .domain([0, 450])
+                .range([h-padding, padding])
+            );
+
+            var colorScale = d3.scaleOrdinal()
+                .range([
+                    colors["lgrey"], colors["orange"], colors["blue"],
+                    colors["red"], colors["black"]
+                ]);
+            
+            var svg = d3.select("#svgs")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+            d3.select("#tooltip").style("display", "none");
+            
+            var parl = svg.selectAll("g")
+                .data(stackParl)
+                .enter()
+                .append("g")
+                .style("fill", function(d, i) {
+                    return colorScale(i);
+                })
+                .attr("class", function(d) { return d["key"]; })
+
+            var last_step = parliaments.length - 1;
+            parl.selectAll("rect")
+                .data(function(d) { return d; })
+                .enter()
+                .append("rect")
+                .attr("x", function(d, i) {
+                    target = base;
+                    if ( i == last_step ) {
+                        base = paddingL;
+                    } else {
+                        base += wths[i];
+                    }
+                    return target;
+                })
+                .attr("y", function(d) {
+                    return parlSeatsScale(d[1]);
+                })
+                .attr("height", function(d) {
+                    return parlSeatsScale(d[0]) - parlSeatsScale(d[1]);
+                })
+                .attr("width", function(d, i) {
+                    return wths[i];
+                })
+                .attr("class", function(d, i) {
+                    return "column-" + i;
+                })
+                .on("mouseenter", function(d, i) {
+                    if ( isMobile ) return;
+
+                    d3.selectAll("." + d3.select(this).attr("class"))
+                        .style("fill", function() {
+                            return tinycolor(
+                                    d3.select(d3.select(this).node().parentNode)
+                                        .style("fill")
+                                ).saturate(dSat).lighten(dLight)
+                                .toHexString();
+                        });
+
+                    d3.select("#tooltip").style("display", null);
+
+                    var tt = d3.select("#mobile-legend").append("table");
+                    tt.append("tr").append("th").attr("colspan", "5")
+                        .text("Верховна Рада " + periods[i]);
+                    [blacks, reds, blues, oranges, lgreys].map(function (w, k) {
+                        w[i].map(function(g) {
+                            var tr = tt.append("tr");
+                            var [g, percentage] = g.split("~");
+                            var [name, sits] = g.split("—");
+                            [name, "—", sits, "~", percentage].map(function(p) {
+                                var td = tr.append("td")
+                                .style("color", colors[Object.keys(colors)[k]])
+                                .text(p);
+                            });
+                        });
+                    });
+                })
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+                    d3.selectAll("." + d3.select(this).attr("class"))
+                        .style("fill", function() {
+                            return tinycolor(d3.select(this).style("fill"))
+                                    .desaturate(dSat).darken(dLight)
+                                    .toHexString();
+                        });
+                    d3.select("#tooltip").style("display", "none");
+                    d3.select("#mobile-legend").html("");
+                })
+                .on("mousemove", function(d) {
+                    if ( isMobile ) return;
+
+                    var h_offset = 0;
+                    if ( window.innerWidth > w ) {
+                        h_offset = (window.innerWidth-w)/2.0 - 6;
+                    }
+
+                    var tt_x = d3.mouse(this)[0] + 18 + h_offset;
+                    var tt_y = d3.mouse(this)[1] + 7 + 119;
+
+                    d3.select("#tooltip")
+                        .style("left", tt_x + "px")
+                        .style("top", tt_y + "px");
+                });
+
+
+            var seats = [50, 100, 150, 200, 225, 250, 300, 350, 400, 450];
+            
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis.tickValues(years)
+                    .tickFormat(d3.timeFormat("%Y"))
+                );
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxis.tickValues(seats)
+                );
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + (w-paddingR) + ", 0)")
+                .call(
+                    yAxisMirror.tickValues(seats)
+                );
+            
+            svg.append("g")
+                .attr("class", "x grid grid1")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis.tickValues(years)
+                        .tickSize(-h)
+                        .tickFormat("")
+                );
+            svg.append("g")
+                .attr("class", "y grid grid1")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxis
+                        .tickSize(-(w-paddingR-paddingL+6))
+                        .tickFormat("")
+                );
+
+            [cloudL, cloudR].map(function (p) {
+                svg.append("text")
+                    .attr("text-anchor", "middle")
+                    .attr("transform",
+                          "translate(" + p + ", " + (h/2) + ")" +
+                          "rotate(-90)"
+                    )
+                    .attr("class", "cloudy")
+                    .text("Депутатські мандати");
+            });
+
+            presElections = [
+                [
+                    new Date("1991"),
+                    colors["lgrey"], "Леонід Кравчук — 61.6%",
+                    colors["orange"], "В'ячеслав Чорновіл — 23.3%"
+                ],
+                [
+                    new Date("1994"),
+                    colors["blue"], "Леонід Кучма — 51.15%",
+                    colors["lgrey"], "Леонід Кравчук — 46.06%"
+                ],
+                [
+                    new Date("1999"),
+                    colors["blue"], "Леонід Кучма — 57.7%",
+                    colors["red"], "Петро Симоненко — 38.8%"
+                ],
+                [
+                    new Date("2004"),
+                    colors["orange"], "Віктор Ющенко — 51.99%",
+                    colors["blue"], "Віктор Янукович — 44.20%"
+                ],
+                [
+                    new Date("2010"),
+                    colors["blue"], "Віктор Янукович — 48.95%",
+                    colors["orange"], "Юлія Тимошенко — 45.47%"
+                ],
+                [
+                    new Date("2014"),
+                    colors["orange"], "Петро Порошенко — 54.70%",
+                    colors["orange"], "Юлія Тимошенко — 12.81%"
+                ]
+            ];
+            svg.selectAll("circle")
+                .data(presElections)
+                .enter()
+                .append("circle")
+                .attr("transform", function(d) {
+                    return "translate(" + timeScale(d[0]) + ", " + h/2 + ")";
+                })
+                .attr("fill", function(d) {
+                    return d[1];
+                })
+                .attr("r", 13)
+                .style("stroke", "rgba(255, 255, 255, 0.6)")
+                .style("stroke-width", "2px")
+                .on("mouseenter", function(d) {
+                    if ( isMobile ) return;
+
+                    var c = d3.select(this);
+                    c.attr("fill", function (d) {
+                        return tinycolor(d3.select(this).attr("fill"))
+                            .saturate(dSat).lighten(dLight);
+                    });
+                    c.style("stroke", "rgba(255, 255, 255, 1)");
+
+                    d3.select("#tooltip").style("display", null);
+
+                    var tt = d3.select("#mobile-legend").append("table");
+                    tt.append("tr").append("th").attr("colspan", "3")
+                        .text(
+                            "Президентські вибори " + d[0].getFullYear()
+                        );
+                    [[d[1], d[2]], [d[3], d[4]]].map(function(r) {
+                        var [cand, percentage] = r[1].split("—");
+                        var tr = tt.append("tr");
+                        tr.append("td")
+                            .style("color", r[0])
+                            .text(cand);
+                        tr.append("td")
+                            .style("color", r[0])
+                            .attr("class", "dash")
+                            .text(" — ");
+                        tr.append("td")
+                            .style("color", r[0])
+                            .attr("class", "presPercentage")
+                            .text(percentage);
+                    });
+                })
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+
+                    var c = d3.select(this);
+                    c.attr("fill", function (d) {
+                        return tinycolor(d3.select(this).attr("fill"))
+                            .desaturate(dSat).darken(dLight);
+                    });
+                    c.style("stroke", "rgba(255, 255, 255, 0.6)");
+                    d3.select("#tooltip").style("display", "none");
+                    d3.select("#mobile-legend").html("");
+                })
+                .on("mousemove", function(d) {
+                    if ( isMobile ) return;
+
+                    var h_offset = 0;
+                    if ( window.innerWidth > w ) {
+                        h_offset = (window.innerWidth-w) / 2.0 - 6;
+                    }
+                    var tt_x = d3.mouse(this)[0] + 18 + timeScale(d[0]) +
+                        h_offset;
+                    var tt_y = d3.mouse(this)[1] + 7 + h/2 + 119;
+                    var tt = d3.select("#tooltip")
+                        .style("left", tt_x + "px")
+                        .style("top", tt_y + "px")
+                });
+
+            var legendScale = d3.scaleOrdinal()
+                .domain([
+                    "Російська армія",
+                    "Проросійські, за деспотію",
+                    "Слабо проросійські, за олігархію",
+                    "Прозахідні, за демократію",
+                    "Інші"
+                ])
+                .range(colorScale.range().reverse());
+            var legend = d3.legendColor()
+                .orient("vertical")
+                .labelWrap(280)
+                .title("Політичні сили")
+                .titleWidth(200)
+                .labelOffset(5)
+                .scale(legendScale);
+
+            svg.append("g")
+                .attr("class", "legend")
+                .attr("transform",
+                    "translate(" + (w-paddingR+paddingL) + ", " +
+                    (padding+10) + ")"
+                )
+                .call(legend);
+
+            //POPULATION AND LIFE EXPECTANCY
+
+            var popData = [
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 51838500},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 51944400},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 52056600},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 52244100},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 52114400},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 51728400},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 51297100},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 50818400},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 50370800},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 49918100},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 49429800},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 48923200},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 48457100},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 48003500},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 47622400},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 47280800},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 46929500},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 46646000},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 46372700},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 46143700},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 45962900},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 45778500},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 45633600},
+                {"occupied_crimea": 0, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 45553000},
+                {"occupied_crimea": 2250000, "refugees_in_ru": 0, "occupied_donbas": 0, "idps": 0, "others": 43176200},
+                {"occupied_crimea": 2250000, "refugees_in_ru": 1000000, "occupied_donbas": 2700000, "idps": 1500000, "others": 37729300},
+                {"occupied_crimea": 2250000, "refugees_in_ru": 1000000, "occupied_donbas": 2700000, "idps": 1500000, "others": 37560500},
+                {"occupied_crimea": 2250000, "refugees_in_ru": 1000000, "occupied_donbas": 2700000, "idps": 1500000, "others": 37384500}
+            ]
+
+            var lifeExpData = [
+                70.42,
+                69.56,
+                68.97,
+                68.29,
+                67.66,
+                66.79,
+                67.08,
+                67.66,
+                68.50,
+                68.07,
+                67.72,
+                67.89,
+                68.32,
+                68.24,
+                68.22,
+                67.96,
+                68.10,
+                68.25,
+                68.27,
+                69.29,
+                70.44,
+                71.02,
+                71.15,
+                71.37,
+                71.37,
+                71.38,
+                71.68,
+            ];
+
+            var employedData = [
+                24125100, // 1995
+                24114000,
+                23755500,
+                22998400,
+                19947800,
+                20175000,
+                19971500,
+                20091200,
+                20163000,
+                20295700,
+                20680000,
+                20730400,
+                20904700,
+                20972300,
+                20191500,
+                20266000, // 2010
+                20324200,
+                20354300,
+                20314200,
+                18073300,
+                16443200,
+                16276900,
+            ];
+
+            var populationScale = d3.scaleLinear()
+                .domain([4000000, 52000000])
+                .range([h-padding, padding]);
+            var lifeExpScale = d3.scaleLinear()
+                .domain([66, 72])
+                .range([h-padding, padding]);
+            var yAxisPop = d3.axisRight(populationScale);
+            var yAxisLifeExp = d3.axisLeft(lifeExpScale);
+
+            var stackPop = d3.stack()
+                .keys([
+                    "others",
+                    "idps",
+                    "occupied_donbas",
+                    "occupied_crimea",
+                    "refugees_in_ru"
+                ])
+                (popData);
+            
+            var linePop = d3.line()
+                .x(function(d, i) {
+                    return timeScale(new Date((1990+i).toString()));
+                })
+                .y(function(d) { 
+                    return populationScale(
+                        Object.values(d).reduce(function(a, b) {
+                            return a + b;
+                        })
+                    );
+                });
+            
+            var areaPop = d3.area()
+                .x(function(d, i) { 
+                    return timeScale(new Date((1990+i).toString()));
+                })
+                .y0(function(d) { return populationScale(d[0]);})
+                .y1(function(d) { return populationScale(d[1]); });
+
+            var lineLifeExp = d3.line()
+                .x(function(d, i) {
+                    return timeScale(new Date((1990+i).toString()));
+                })
+                .y(function(d) { return lifeExpScale(d)});
+
+            var lineEmployed = d3.line()
+                .x(function (d, i) {
+                    return timeScale(new Date((1995+i).toString()));
+                })
+                .y(function(d, i) { return populationScale(d)});
+
+            var svg2 = d3.select("#svgs")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+            svg2.append("rect")
+                .attr("transform",
+                      "translate(" + paddingL + "," + padding + ")"
+                )
+                .attr("width", w-paddingR-paddingL)
+                .attr("height", h-padding)
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .on("mouseenter", function() {
+                    if ( isMobile ) return;
+
+                    fs.map(function (f) {
+                        f.style("display", null);
+                    });
+                })
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+
+                    fs.map(function (f) { f.style("display", "none"); });
+                    highlight(false);
+                })
+                .on("mousemove", function() {
+                    if ( isMobile ) return;
+
+                    var x = timeScale.invert(d3.mouse(this)[0] + paddingL),
+                        i,
+                        popD,
+                        lifeD,
+                        employedD;
+
+                    if ( x.getMonth() < 6 ) {
+                        x = new Date((x.getFullYear()).toString());
+                    } else {
+                        x = new Date((x.getFullYear() + 1).toString());
+                    }
+                    i = x.getFullYear() - 1990;
+
+                    popD = Object.values(popData[i]).reduce(function (a, b) {
+                        return a + b;
+                    });
+                    if ( i < lifeExpData.length ) {
+                        lifeD = lifeExpData[i];
+                    } else {
+                        lifeD = null;
+                    }
+                    if ( i - 5 >= 0 && i - 5 < employedData.length ) {
+                        employedD = employedData[i-5];
+                    } else {
+                        employedD = null;
+                    }
+
+                    if ( isHighlighted ) {
+                        highlight(false);
+                    }
+                    highlight(x);
+
+                    [
+                        [focusPop, popD, populationScale, -4],
+                        [focusLifeExp, lifeD, lifeExpScale, 31],
+                        [focusEmployed, employedD, populationScale, -4]
+                    ].map(function (f) {
+                        if ( f[1] == null ) {
+                            f[0].style("display", "none");
+                            return;
+                        } else {
+                            f[0].style("display", null);
+                        }
+
+                        ["text.back", "text.fore"].map(function (t) {
+                            f[0].select(t)
+                                .attr(
+                                    "transform",
+                                    "translate(" + (timeScale(x)-f[3]) + "," +
+                                                    f[2](f[1]) + ")"
+                                )
+                                .text(d3.format("0.4s")(f[1]));
+                            });
+                        f[0].select("circle.y")
+                            .attr(
+                                "transform",
+                                "translate(" + timeScale(x) + "," +
+                                               f[2](f[1]) + ")"
+                            );
+                    });
+                });
+
+            svg2.selectAll("g")
+                .data(stackPop)
+                .enter()
+                .append("g")
+                .attr("class", function(d) {return d["key"];})
+                .style("fill", function(d, i) {
+                    return colorScale(i+1);
+                })
+                .append("path")
+                .attr("d", areaPop);
+
+            svg2.selectAll(
+                    ".occupied_donbas, .refugees_in_ru, .occupied_crimea, .idps"
+                )
+                .on("mouseenter", function() {
+                    if ( isMobile ) return;
+
+                    d3.selectAll("." + d3.select(this).attr("class"))
+                        .style("fill", function() {
+                            return tinycolor(d3.select(this).style("fill"))
+                                .saturate(dSat).lighten(dLight).toHexString();
+                        });
+                    d3.select("#tooltip").style("display", null);
+
+                    var tt = d3.select("#mobile-legend");
+                    tt.text(
+                        d3.format("0.2s")(popData[popData.length-1][
+                            d3.select(this).attr("class")
+                        ])
+                    );
+                })
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+
+                    d3.selectAll("." + d3.select(this).attr("class"))
+                        .style("fill", function() {
+                            return tinycolor(d3.select(this).style("fill"))
+                                .desaturate(dSat).darken(dLight).toHexString();
+                        });
+                    d3.select("#tooltip").style("display", "none");
+                    d3.select("#mobile-legend").html("");
+                })
+                .on("mousemove", function(d) {
+                    if ( isMobile ) return;
+
+                    var h_offset = 0;
+                    if ( window.innerWidth > w ) {
+                        h_offset = (window.innerWidth-w)/2.0 - 6;
+                    }
+
+                    var tt_x = d3.mouse(this)[0] + 18 + h_offset;
+                    var tt_y = d3.mouse(this)[1] + 7 + 119;
+                    var tt = d3.select("#tooltip")
+                        .style("left", tt_x + "px")
+                        .style("top", tt_y + h + "px")
+                });
+        
+
+            svg2
+                .append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + (w-paddingR) + ", 0)")
+                .call(yAxisPop.tickValues(
+                        [4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52]
+                        .map(function(n) {return n * 1000000; })
+                    ).tickFormat(d3.format("0.2s"))
+                );
+            svg2
+                .append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisLifeExp.tickValues([66, 67, 68, 69, 70, 71, 72])
+                    .tickFormat(d3.format("0.3s"))
+                );
+
+            svg2.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis2.tickValues(years)
+                        .tickFormat("")
+                        .tickSize(padding)
+                );
+
+            svg2.append("g")
+                .attr("class", "x grid grid2")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis2.tickValues(years)
+                        .tickSize(-h)
+                        .tickFormat("")
+                );
+            svg2.append("g")
+                .attr("class", "grid grid2")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisPop.tickSize((w-paddingR-paddingL+6))
+                        .tickFormat("")
+                );
+
+            [
+                ["linePop", popData, linePop],
+                ["lineLifeExp", lifeExpData, lineLifeExp],
+                ["lineEmployed", employedData, lineEmployed]
+            ].map(function (l) {
+                svg2.append("path")
+                    .attr("class", l[0])
+                    .datum(l[1])
+                    .attr("d", l[2]);
+            });
+            
+            var focusPop = svg2.append("g").attr("class", "focusPop");
+            var focusLifeExp = svg2.append("g").attr("class", "focusLifeExp");
+            var focusEmployed = svg2.append("g").attr("class", "focusEmployed");
+
+            var fs = [focusPop, focusLifeExp, focusEmployed].map(function (f) {
+                f.append("circle").attr("class", "y").attr("r", 2);
+                f.append("text").attr("class", "back");
+                f.append("text").attr("class", "fore");
+
+                f.style("display", "none");
+                f.classed("focus", true);
+
+                return f;
+            });
+
+            svg2.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudL + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Тривалість життя");
+
+            svg2.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudR + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Зайнятість & Населення");
+            svg2.append("text")
+                .attr("text-anchor", "start")
+                .attr("transform",
+                      "translate(" + (w-paddingR+paddingL) + ", 168.0)")
+                .attr("font-style", "italic")
+                .attr("class", "note")
+                .text("Примітка: \"Падіння\" зайнятості в");
+            svg2.append("text")
+                .attr("text-anchor", "start")
+                .attr("transform",
+                      "translate(" + (w-paddingR+paddingL) + ", 182.0)")
+                .attr("font-style", "italic")
+                .attr("class", "note")
+                .text("1999 році це результат оновлення");
+            svg2.append("text")
+                .attr("text-anchor", "start")
+                .attr("transform",
+                      "translate(" + (w-paddingR+paddingL) + ", 197.4)")
+                .attr("font-style", "italic")
+                .attr("class", "note")
+                .text("демографічних даних.");
+
+            var legendScale2 = d3.scaleOrdinal()
+                .domain([
+                    "Біженці в Росії з Донбасу",
+                    "В окупованому Росією Криму",
+                    "В окупованих Росією районах Донбасу",
+                    "Внутрішньо зміщені з Донбасу",
+                    "Інші",
+                    "Тривалість життя & Зайнятість"
+                ])
+                .range([
+                    colors["lgrey"], colors["black"],  colors["red"],
+                    colors["blue"], colors["orange"], colors["white"]
+                ]);
+            var legend2 = d3.legendColor()
+                .orient("vertical")
+                .labelWrap(280)
+                .title("Люди")
+                .titleWidth(200)
+                .labelOffset(5)
+                .scale(legendScale2);
+
+            svg2.append("g")
+            .attr("class", "legend")
+            .attr("transform",
+                "translate(" + (w-paddingR+paddingL) + ", " + (padding+10) + ")"
+            )
+            .call(legend2);
+
+            /// GDP & WAGE
+            var GDPData = [
+                81.5,
+                77.5,
+                73.9,
+                65.6,
+                52.6,
+                48.2,
+                44.6,
+                50.2,
+                41.9,
+                31.6,
+                31.3,
+                38.0,
+                42.4,
+                50.1,
+                64.9,
+                86.1,
+                107.8,
+                142.7,
+                180,
+                117.2,
+                136.0,
+                163.2,
+                175.8,
+                183.3,
+                133.5,
+                91.0,
+                93.3
+            ];
+            var GDPPerCaData = [
+                6763.20,
+                6387.20,
+                5882.24,
+                5162.61,
+                4083.49,
+                3689.12,
+                3410.96,
+                3396.06,
+                3397.92,
+                3475.64,
+                3802.54,
+                4289.92,
+                4628.04,
+                5206.11,
+                6042.19,
+                6452.10,
+                7184.20,
+                8005.69,
+                8395.81,
+                7239.62,
+                7666.22,
+                8281.87,
+                8475.47,
+                8629.68,
+                8683.64,
+                7948.14,
+                8271.78
+            ];
+            var avgWageData = [
+                251.72, //1995
+                268.09,
+                264.81,
+                255,
+                234.21,
+                252.75,
+                317.35,
+                372.28,
+                431.78,
+                486.78,
+                555.86,
+                642.59,
+                700,
+                740.16,
+                698.17,
+                729.32,
+                767.64,
+                831.32,
+                875.34,
+                818.82,
+                718.32,
+                767.85,
+                892.63
+            ].map(function (w) { return w * 12; });
+
+            var GDPPerEmployedData = GDPPerCaData.slice(5).map(
+                function (gdpPerCa, i) {
+                    var pop = popData[i+5];
+                    var pop = pop["others"] + pop["idps"];
+                    return gdpPerCa / (employedData[i] / pop);
+            });
+
+            var gdpScale = d3.scaleLinear()
+                .domain([30, 210])
+                .range([h-padding, padding]);
+
+            var perScale = d3.scaleLinear()
+                .domain([3000, 21000])
+                .range([h-padding, padding]);
+
+            var yAxisGDP = d3.axisLeft(gdpScale);
+            var yAxisPer = d3.axisRight(perScale);
+
+            var lineGDP = d3.line()
+                .x(function(d, i) {
+                    return timeScale(new Date((1990+i).toString()));
+                })
+                .y(function (d) {
+                    return gdpScale(d);
+                });
+            
+            var lineGDPPerEmployed = d3.line()
+                .x(function(d, i) {
+                    return timeScale(new Date((1995+i).toString()));
+                })
+                .y(function (d) {
+                    return perScale(d);
+                });
+            
+            var lineAvgWage = d3.line()
+                .x(function(d, i) {
+                    return timeScale(new Date((1995+i).toString()));
+                })
+                .y(function (d) {
+                    return perScale(d);
+                });
+            
+
+            var svg3 = d3.select("#svgs")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+            svg3.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis3.tickValues(years)
+                        .tickFormat("")
+                        .tickSize(padding)
+                );
+            var locale = d3.formatLocale({currency: ["$", "B"], decimal: "."});
+            svg3.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisGDP.tickValues([30, 60, 90, 120, 150, 180, 210])
+                    .tickFormat(locale.format("$0.2r"))
+                );
+            svg3.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + (w-paddingR) + ", 0)")
+                .call(
+                    yAxisPer.tickValues([
+                        3000, 6000, 9000, 12000, 15000, 18000, 21000
+                    ])
+                    .tickFormat(d3.format("$0.2s"))
+                );
+
+            svg3.append("g")
+                .attr("class", "grid grid3")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisGDP
+                    .tickSize(-(w-paddingL-paddingR+6))
+                    .tickFormat("")
+                );
+            svg3.append("g")
+                .attr("class", "x grid grid3")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis3.tickValues(years)
+                        .tickSize(-h)
+                        .tickFormat("")
+                );
+
+            svg3.append("path")
+                .attr("class", "lineGDP")
+                .datum(GDPData)
+                .attr("d", lineGDP);
+            svg3.append("path")
+                .attr("class", "lineGDPPerEmployed")
+                .datum(GDPPerEmployedData)
+                .attr("d", lineGDPPerEmployed);
+            svg3.append("path")
+                .attr("class", "lineAvgWage")
+                .datum(avgWageData)
+                .attr("d", lineAvgWage);
+
+            var focusGDP = svg3.append("g").attr("class", "focusGDP");
+            var focusGDPPerEmployed = svg3.append("g")
+                .attr("class", "focusGDPPerEmployed");
+            var focusAvgWage = svg3.append("g").attr("class", "focusAvgWage");
+
+            var fs2 = [focusGDP, focusGDPPerEmployed, focusAvgWage].map(
+                function(f) {
+                    f.append("circle")
+                        .attr("class", "y")
+                        .attr("r", 2);
+                    f.append("text")
+                        .attr("class", "back");
+                    f.append("text")
+                        .attr("class", "fore");
+
+                    f.style("display", "none");
+                    f.classed("focus", true);
+                    
+                    return f;
+                }
+            );
+
+            svg3.append("rect")
+                .attr("transform",
+                      "translate(" + paddingL + "," + padding + ")")
+                .attr("width", w-paddingR-paddingL)
+                .attr("height", h-padding)
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .on("mouseenter", function() {
+                    if ( isMobile ) return;
+
+                    fs2.map(function (f) { f.style("display", null); });
+                })
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+
+                    fs2.map(function (f) { f.style("display", "none"); });
+
+                    highlight(false);
+                })
+                .on("mousemove", function() {
+                    if ( isMobile ) return;
+
+                    var x = timeScale.invert(d3.mouse(this)[0]+paddingL),
+                        i,
+                        gdpD,
+                        gdpPerEmployedD,
+                        avgWageD;
+
+                    if ( x.getMonth() < 6 ) {
+                        x = new Date(x.getFullYear().toString());
+                    } else {
+                        x = new Date((x.getFullYear() + 1).toString());
+                    }
+                    i = x.getFullYear() - 1990;
+
+                    gdpD = GDPData[i];
+                    if ( i - 5 >= 0 && i - 5 < GDPPerEmployedData.length ) {
+                            gdpPerEmployedD = GDPPerEmployedData[i-5];
+                    } else {
+                        gdpPerEmployedD = null;
+                    }
+                    if ( i - 5 >= 0 && i - 5 < avgWageData.length ) {
+                            avgWageD = avgWageData[i-5];
+                    } else {
+                        avgWageD = null;
+                    }
+
+                    if ( isHighlighted ) {
+                        highlight(false);
+                    }
+                    highlight(x);
+                    [
+                        [
+                            focusGDP, gdpD, gdpScale, 44,
+                            locale.format("$0.4r")
+                        ],
+                        [
+                            focusGDPPerEmployed, gdpPerEmployedD, perScale, -4,
+                            d3.format("$0.3s")
+                        ],
+                        [
+                            focusAvgWage, avgWageD, perScale, -4,
+                            d3.format("$0.3s")
+                        ]
+                    ].map(function (f) {
+                        if ( f[1] == null ) {
+                            f[0].style("display", "none");
+                            return;
+                        } else {
+                            f[0].style("display", null);
+                        }
+                        ["text.back", "text.fore"].map(function (t) {
+                            f[0].select(t)
+                                .attr(
+                                    "transform",
+                                    "translate(" + (timeScale(x)-f[3]) + "," +
+                                                    f[2](f[1]) + ")"
+                                )
+                                .text(f[4](f[1]));
+                            });
+                        f[0].select("circle.y")
+                            .attr(
+                                "transform",
+                                "translate(" + timeScale(x) + "," +
+                                               f[2](f[1]) + ")"
+                            );
+                    });
+                });
+
+            svg3.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudL + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("ВВП");
+
+            svg3.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudR + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Зарплата & ВВП на зайн.");
+            svg3.append("text")
+                .attr("text-anchor", "start")
+                .attr("transform",
+                      "translate(" + (w-paddingR+paddingL) + ", 168.0)")
+                .attr("font-style", "italic")
+                .attr("class", "note")
+                .text("Примітка: Тут і далі \"B\" значить мільярди,");
+            svg3.append("text")
+                .attr("text-anchor", "start")
+                .attr("transform",
+                      "translate(" + (w-paddingR+paddingL) + ", 182.0)")
+                .attr("font-style", "italic")
+                .attr("class", "note")
+                .text("а \"k\" значить тисячі.");
+
+            var legendScale3 = d3.scaleOrdinal()
+                .domain([
+                    "ВВП (річний, номінальні $)",
+                    "ВВП на зайнятого (річний, ПКС $)",
+                    "Середня зарплата (річна, ПКС $)"
+                ])
+                .range([
+                    colors["red"], colors["blue"],  colors["orange"]
+                ]);
+            var legend3 = d3.legendColor()
+                .orient("vertical")
+                .labelWrap(280)
+                .title("Економіка")
+                .titleWidth(200)
+                .labelOffset(5)
+                .scale(legendScale3);
+
+            svg3.append("g")
+                .attr("class", "legend")
+                .attr("transform",
+                      "translate(" + (w-paddingR+paddingL) + ", " +
+                      (padding+10) + ")"
+                )
+                .call(legend3);
+            
+
+            /// TRADE
+
+            var tradeData = [
+                {
+                    euExport: 4.32, euImport: 5.69,
+                    ruExport: 5.78, ruImport: 8.41,
+                    restExport: 4.7, restImport: 3.4
+                }, //1996
+                {
+                    euExport: 4.81, euImport: 6.72,
+                    ruExport: 3.86, ruImport: 7.48,
+                    restExport: 5.33, restImport: 2.1
+                },
+                {
+                    euExport: 4.98, euImport: 6.35,
+                    ruExport: 3.18, ruImport: 5.95,
+                    restExport: 5.04, restImport: 1.8
+                },
+                {
+                    euExport: 4.14, euImport: 4.44,
+                    ruExport: 2.43, ruImport: 5.31,
+                    restExport: 4.83, restImport: 1.85
+                },
+                {
+                    euExport: 5.83, euImport: 5.88,
+                    ruExport: 3.58, ruImport: 5.42,
+                    restExport: 6.69, restImport: 3.4
+                },
+                {
+                    euExport: 6.55, euImport: 6.98,
+                    ruExport: 3.75, ruImport: 5.52,
+                    restExport: 7.1, restImport: 4.5
+                },
+                {
+                    euExport: 7.91, euImport: 7.1,
+                    ruExport: 3.19, ruImport: 6.9,
+                    restExport: 8, restImport: 5.2
+                },
+                {
+                    euExport: 10.32, euImport: 10.86,
+                    ruExport: 4.38, ruImport: 8.14,
+                    restExport: 9.9, restImport: 6.5
+                },
+                {
+                    euExport: 13.54, euImport: 13.9,
+                    ruExport: 5.96, ruImport: 11.2,
+                    restExport: 15.3, restImport: 8.4
+                },
+                {
+                    euExport: 13.34, euImport: 17.7,
+                    ruExport: 7.66, ruImport: 12.6,
+                    restExport: 15.9, restImport: 10.6
+                },
+                {
+                    euExport: 15.2, euImport: 24.8,
+                    ruExport: 8.90, ruImport: 14.4,
+                    restExport: 17.4, restImport: 15.1
+                },
+                {
+                    euExport: 18.6, euImport: 32.8,
+                    ruExport: 13.0, ruImport: 16.4,
+                    restExport: 21.1, restImport: 22.3
+                },
+                {
+                    euExport: 28.4, euImport: 41.2,
+                    ruExport: 16.0, ruImport: 21.3,
+                    restExport: 34.7, restImport: 34
+                },
+                {
+                    euExport: 13.58, euImport: 22.1,
+                    ruExport: 8.82, ruImport: 13.5,
+                    restExport: 24.4, restImport: 14.8
+                },
+                {
+                    euExport: 18.5, euImport: 26.6,
+                    ruExport: 13.7, ruImport: 22.2,
+                    restExport: 25.6, restImport: 16.2
+                },
+                {
+                    euExport: 24.1, euImport: 34.9,
+                    ruExport: 19.9, ruImport: 29.1,
+                    restExport: 31.7, restImport: 23.1
+                },
+                {
+                    euExport: 21.8, euImport: 37.3,
+                    ruExport: 17.8, ruImport: 27.4,
+                    restExport: 36.1, restImport: 24.8
+                },
+                {
+                    euExport: 21.4, euImport: 37.6,
+                    ruExport: 15.4, ruImport: 23.2,
+                    restExport: 30.6, restImport: 23.3
+                },
+                {
+                    euExport: 21.1, euImport: 28.5,
+                    ruExport: 10.2, ruImport: 12.0,
+                    restExport: 27.4, restImport: 16.6
+                },
+                {
+                    euExport: 15.81, euImport: 20.8,
+                    ruExport: 5.19, ruImport: 7.32,
+                    restExport: 22.0, restImport: 11.6
+                },
+                {
+                    euExport: 15.85, euImport: 21.12,
+                    ruExport: 3.95, ruImport: 6.28,
+                    restExport: 16.5, restImport: 10.3
+                }
+            ];
+
+            var tradeWithRuData = tradeData.map(function (f) {
+                return (f["ruExport"] + f["ruImport"])/Object.values(f).reduce(
+                    function (a, b) {
+                        return a + b;
+                    }
+                );
+            });
+
+            var stackTrade = d3.stack().keys([
+                "ruImport", "ruExport",
+                "euImport", "euExport",
+                "restImport", "restExport"
+            ])(tradeData);
+
+            var tradeScale = d3.scaleLinear()
+                .domain([0, 180])
+                .range([h-padding, padding]);
+            var percentScale = d3.scaleLinear()
+                .domain([0, 0.9])
+                .range([h-padding, padding]);
+
+            var yAxisTrade = d3.axisLeft(tradeScale);
+            var yAxisPercent = d3.axisRight(percentScale);
+
+            var lineTradeRu = d3.line()
+                .x(function (d, i) {
+                    return timeScale(new Date((1996+i).toString()));
+                })
+                .y(function (d) { return percentScale(d); });
+
+            var areaTrade = d3.area()
+                .x(function (d, i) { 
+                    return timeScale(new Date((1996+i).toString()));
+                })
+                .y0(function (d) { return tradeScale(d[0]); })
+                .y1(function (d) { return tradeScale(d[1]); });
+
+            var svg4 = d3.select("#svgs")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+            var tradeColorScale = d3.scaleOrdinal()
+                .range([
+                    tinycolor(colors["red"]).saturate(dSat).toHexString(),
+                    tinycolor(colors["red"]).desaturate(dSat).toHexString(),
+                    tinycolor(colors["blue"]).saturate(dSat).toHexString(),
+                    tinycolor(colors["blue"]).desaturate(dSat).toHexString(),
+                    tinycolor(colors["green"]).saturate(dSat).toHexString(),
+                    tinycolor(colors["green"]).desaturate(dSat).toHexString(),
+                ]);
+
+            svg4.selectAll("g")
+                .data(stackTrade)
+                .enter()
+                .append("g")
+                .attr("class", function(d) {return d["key"];})
+                .style("fill", function(d, i) {
+                    return tradeColorScale(i+1);
+                })
+                .append("path")
+                .attr("d", areaTrade);
+
+            svg4.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisTrade.tickFormat(locale.format("$0.2r"))
+                        .tickValues([
+                            0, 20, 40, 60, 80, 100, 120, 140, 160, 180
+                        ])
+                );
+            svg4.append("g")
+                .attr("class", "grid grid4")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisTrade
+                        .tickSize(-(w-paddingR-paddingL+6))
+                        .tickFormat("")
+                );
+            svg4.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + (w-paddingR) + ", 0)")
+                .call(
+                    yAxisPercent.tickFormat(d3.format(".0%"))
+                        .tickValues([
+                            0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9
+                        ])
+                );
+
+            svg4.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis4.tickValues(years)
+                        .tickFormat("")
+                        .tickSize(padding)
+                );
+            svg4.append("g")
+                .attr("class", "x grid grid4")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis4.tickValues(years)
+                        .tickSize(-h)
+                        .tickFormat("")
+                );
+
+            svg4
+                .append("path")
+                .attr("class", "lineTradeRu")
+                .datum(tradeWithRuData)
+                .attr("d", lineTradeRu);
+
+            var focusRestExp = svg4.append("g").attr("class", "focusRestExp");
+            var focusRestImp = svg4.append("g").attr("class", "focusRestImp");
+            var focusEUExp = svg4.append("g").attr("class", "focusEUExp");
+            var focusEUImp = svg4.append("g").attr("class", "focusEUImp");
+            var focusRuExp = svg4.append("g").attr("class", "focusRuExp");
+            var focusRuImp = svg4.append("g").attr("class", "focusRuImp");
+            var focusTotalTrade = svg4.append("g")
+                .attr("class", "focusTotalTrade");
+
+            var fs3 = [
+                focusRestExp, focusRestImp,
+                focusEUExp, focusEUImp,
+                focusRuExp, focusRuImp,
+                focusTotalTrade
+            ].map(function (f, i) {
+                if ( i < 6 ) {
+                    f.append("circle")
+                        .attr("class", "y")
+                        .attr("r", 2);
+                }
+                f.append("text")
+                    .attr("class", "back");
+                f.append("text")
+                    .attr("class", "fore");
+
+                f.style("display", "none");
+                f.classed("focus", true);
+
+                return f;
+            });
+
+            svg4.append("rect")
+                .attr("transform",
+                      "translate(" + paddingL + "," + padding + ")"
+                )
+                .attr("width", w-paddingR-paddingL)
+                .attr("height", h-padding)
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+
+                    fs3.map(function (f) {
+                        f.style("display", "none");
+                    });
+                    highlight(false);
+                })
+                .on("mousemove", function() {
+                    if ( isMobile ) return;
+
+                    var x = timeScale.invert(d3.mouse(this)[0]+paddingL);
+                    if ( parseInt(x.getFullYear()) < 1995 ) {
+                        fs3.map(function (f) { f.style("display", "none"); });
+                        highlight(false);
+
+                        return;
+                    }
+
+                    if ( x.getMonth() < 6 ) {
+                        x = new Date(x.getFullYear().toString());
+                    } else {
+                        x = new Date((x.getFullYear() + 1).toString());
+                    }
+
+                    if ( isHighlighted ) {
+                        highlight(false);
+                    }
+
+                    var i = x.getFullYear()-1990;
+                    if ( i - 6 >= 0 && i - 6 < stackTrade[0].length ) {
+                        [botRestExpD, topRestExpD] = stackTrade[5][i-6];
+                        [botRestImpD, topRestImpD] = stackTrade[4][i-6];
+                        [botEUExpD, topEUExpD] = stackTrade[3][i-6];
+                        [botEUImpD, topEUImpD] = stackTrade[2][i-6];
+                        [botRuExpD, topRuExpD] = stackTrade[1][i-6];
+                        [botRuImpD, topRuImpD] = stackTrade[0][i-6];
+                    } else {
+                        return;
+                    }
+                    
+                    fs3.map(function (f) { f.style("display", null); });
+                    highlight(x);
+
+                    [
+                        [
+                            focusTotalTrade,
+                            [16, topRestExpD+16],
+                            tradeScale,
+                            15,
+                            0
+                        ],
+                        [
+                            focusRestExp,
+                            [botRestExpD, topRestExpD],
+                            tradeScale,
+                            39,
+                            1
+                        ],
+                        [
+                            focusRestImp,
+                            [botRestImpD, topRestImpD],
+                            tradeScale,
+                            -5,
+                            1
+                        ],
+                        [
+                            focusEUExp,
+                            [botEUExpD, topEUExpD],
+                            tradeScale,
+                            39,
+                            0
+                        ],
+                        [
+                            focusEUImp,
+                            [botEUImpD, topEUImpD],
+                            tradeScale,
+                            -5,
+                            0
+                        ],
+                        [
+                            focusRuExp,
+                            [botRuExpD, topRuExpD],
+                            tradeScale,
+                            39,
+                            -1
+                        ],
+                        [
+                            focusRuImp,
+                            [botRuImpD, topRuImpD],
+                            tradeScale,
+                            -5,
+                            -1
+                        ]
+                    ].map(function (f, i) {
+                        if ( x.getFullYear() < 2000 ) {
+                            if ( i < 3 ) {
+                                f[4] += 2;
+                            }
+                            if ( x.getFullYear() == 1999 && i == 6 ) {
+                                f[4] -= 2;
+                            }
+                        }
+                        ["text.back", "text.fore"].map(function (t) {
+                            var v = timeScale(new Date("2001"))/timeScale(x);
+                            f[0].select(t)
+                                .attr(
+                                    "transform",
+                                    "translate(" + (timeScale(x)-f[3]) + "," +
+                                                    (f[2](f[1][1])-f[4]*v) + ")"
+                                )
+                                .text(locale.format("$0.3r")(f[1][1]-f[1][0]));
+                        });
+                        if ( i < 1 ) return;
+
+                        f[0].select("text.fore")
+                            .attr("fill", tradeColorScale.range()[6-i]);
+
+                        f[0].select("circle.y")
+                            .attr(
+                                "transform",
+                                "translate(" + timeScale(x) + "," +
+                                               f[2](f[1][1]) + ")"
+                            );
+                    });
+                });
+
+            svg4.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudL + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Торгівля товарами");
+
+            svg4.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudR + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Торгівля з Росією");
+
+            var legendScale4 = d3.scaleOrdinal()
+                .domain([
+                    "Експорт в Європу",
+                    "Імпорт з Європи",
+                    "Експорт в Росію",
+                    "Імпорт з Росії",
+                    "Експорт в решту світу",
+                    "Імпорт з решти світу"
+                ])
+                .range([
+                    tinycolor(colors["blue"]).desaturate(dSat).toHexString(),
+                    tinycolor(colors["blue"]).saturate(dSat).toHexString(),
+                    tinycolor(colors["red"]).desaturate(dSat).toHexString(),
+                    tinycolor(colors["red"]).saturate(dSat).toHexString(),
+                    tinycolor(colors["green"]).desaturate(dSat).toHexString(),
+                    tinycolor(colors["green"]).saturate(dSat).toHexString()
+                ]);
+            var legend4 = d3.legendColor()
+                .orient("vertical")
+                .labelWrap(280)
+                .title("Торгівля")
+                .titleWidth(200)
+                .labelOffset(5)
+                .scale(legendScale4);
+
+            svg4.append("g")
+            .attr("class", "legend")
+            .attr("transform",
+                "translate(" + (w-paddingR+paddingL) + ", " + (padding+10) + ")"
+            )
+            .call(legend4);
+
+            /// EXPORT COMPOSITION
+
+            var exportData = [
+                {
+                    textilesAndFurniture: 0.422,
+                    foodAndWood: 0.714,
+                    stoneAndGlass: 0.080,
+                    minerals: 1.08,
+                    metals: 2.32,
+                    chemicalsAndPlastics: 1.46,
+                    transport: 0.104,
+                    machinery: 0.111,
+                    electronics: 0.069,
+                    other: 0.535
+                },//1995
+                {
+                    textilesAndFurniture: 0.554,
+                    foodAndWood: 3.57,
+                    stoneAndGlass: 0.241,
+                    minerals: 1.47,
+                    metals: 5.29,
+                    chemicalsAndPlastics: 2.34,
+                    transport: 0.716,
+                    machinery: 1.05,
+                    electronics: 0.477,
+                    other: 0.227
+                },
+                {
+                    textilesAndFurniture: 0.582,
+                    foodAndWood: 2.20,
+                    stoneAndGlass: 0.219,
+                    minerals: 1.54,
+                    metals: 6.32,
+                    chemicalsAndPlastics: 1.99,
+                    transport: 0.592,
+                    machinery: 1.12,
+                    electronics: 0.466,
+                    other: 0.369
+                },
+                {
+                    textilesAndFurniture: 0.613,
+                    foodAndWood: 1.94,
+                    stoneAndGlass: 0.169,
+                    minerals: 1.34,
+                    metals: 6.02,
+                    chemicalsAndPlastics: 1.78,
+                    transport: 0.601,
+                    machinery: 0.982,
+                    electronics: 0.386,
+                    other: 0.538
+                },
+                {
+                    textilesAndFurniture: 0.579,
+                    foodAndWood: 1.97,
+                    stoneAndGlass: 0.160,
+                    minerals: 1.46,
+                    metals: 5.03,
+                    chemicalsAndPlastics: 1.42,
+                    transport: 0.424,
+                    machinery: 0.707,
+                    electronics: 0.313,
+                    other: 0.706
+                },
+                {
+                    textilesAndFurniture: 0.710,
+                    foodAndWood: 1.96,
+                    stoneAndGlass: 0.276,
+                    minerals: 1.68,
+                    metals: 6.86,
+                    chemicalsAndPlastics: 1.94,
+                    transport: 0.492,
+                    machinery: 1.02,
+                    electronics: 0.497,
+                    other: 0.688
+                },
+                {
+                    textilesAndFurniture: 0.798,
+                    foodAndWood: 2.50,
+                    stoneAndGlass: 0.227,
+                    minerals: 2.17,
+                    metals: 6.74,
+                    chemicalsAndPlastics: 2.01,
+                    transport: 0.573,
+                    machinery: 1.30,
+                    electronics: 0.450,
+                    other: 0.979
+                },
+                {
+                    textilesAndFurniture: 0.795,
+                    foodAndWood: 3.32,
+                    stoneAndGlass: 0.251,
+                    minerals: 2.86,
+                    metals: 7.28,
+                    chemicalsAndPlastics: 1.84,
+                    transport: 0.698,
+                    machinery: 1.50,
+                    electronics: 0.470,
+                    other: 0.278
+                },
+                {
+                    textilesAndFurniture: 0.942,
+                    foodAndWood: 3.87,
+                    stoneAndGlass: 0.362,
+                    minerals: 4.03,
+                    metals: 9.10,
+                    chemicalsAndPlastics: 2.43,
+                    transport: 1.03,
+                    machinery: 1.82,
+                    electronics: 0.892,
+                    other: 0.349
+                },
+                {
+                    textilesAndFurniture: 1.12,
+                    foodAndWood: 4.78,
+                    stoneAndGlass: 0.419,
+                    minerals: 5.06,
+                    metals: 14.2,
+                    chemicalsAndPlastics: 3.34,
+                    transport: 2.11,
+                    machinery: 2.35,
+                    electronics: 1.19,
+                    other: 0.488
+                },
+                {
+                    textilesAndFurniture: 1.18,
+                    foodAndWood: 5.77,
+                    stoneAndGlass: 0.340,
+                    minerals: 5.60,
+                    metals: 15.4,
+                    chemicalsAndPlastics: 3.98,
+                    transport: 1.80,
+                    machinery: 2.17,
+                    electronics: 0.947,
+                    other: 0.463
+                },
+                {
+                    textilesAndFurniture: 1.29,
+                    foodAndWood: 6.62,
+                    stoneAndGlass: 0.420,
+                    minerals: 4.77,
+                    metals: 17.6,
+                    chemicalsAndPlastics: 4.63,
+                    transport: 2.21,
+                    machinery: 2.35,
+                    electronics: 1.29,
+                    other: 0.635
+                },
+                {
+                    textilesAndFurniture: 1.42,
+                    foodAndWood: 8.88,
+                    stoneAndGlass: 0.535,
+                    minerals: 5.46,
+                    metals: 21.8,
+                    chemicalsAndPlastics: 5.46,
+                    transport: 3.31,
+                    machinery: 3.13,
+                    electronics: 2.23,
+                    other: 0.713
+                },
+                {
+                    textilesAndFurniture: 1.51,
+                    foodAndWood: 13.8,
+                    stoneAndGlass: 0.675,
+                    minerals: 9.60,
+                    metals: 31.1,
+                    chemicalsAndPlastics: 7.58,
+                    transport: 5.11,
+                    machinery: 3.94,
+                    electronics: 2.87,
+                    other: 0.405
+                },
+                {
+                    textilesAndFurniture: 1.10,
+                    foodAndWood: 12.2,
+                    stoneAndGlass: 0.405,
+                    minerals: 5.73,
+                    metals: 16.3,
+                    chemicalsAndPlastics: 3.57,
+                    transport: 1.85,
+                    machinery: 3.26,
+                    electronics: 2.18,
+                    other: 0.652
+                },
+                {
+                    textilesAndFurniture: 1.26,
+                    foodAndWood: 12.3,
+                    stoneAndGlass: 0.505,
+                    minerals: 9.97,
+                    metals: 19.5,
+                    chemicalsAndPlastics: 4.71,
+                    transport: 3.51,
+                    machinery: 3.57,
+                    electronics: 2.62,
+                    other: 0.933
+                },
+                {
+                    textilesAndFurniture: 1.63,
+                    foodAndWood: 15.5,
+                    stoneAndGlass: 0.674,
+                    minerals: 13.9,
+                    metals: 23.8,
+                    chemicalsAndPlastics: 7.41,
+                    transport: 5.05,
+                    machinery: 4.21,
+                    electronics: 3.25,
+                    other: 1.11
+                },
+                {
+                    textilesAndFurniture: 1.60,
+                    foodAndWood: 20.6,
+                    stoneAndGlass: 0.738,
+                    minerals: 10.7,
+                    metals: 21.2,
+                    chemicalsAndPlastics: 6.85,
+                    transport: 6.06,
+                    machinery: 4.32,
+                    electronics: 3.27,
+                    other: 0.567
+                }, //2012
+                {
+                    textilesAndFurniture: 1.78,
+                    foodAndWood: 19.9,
+                    stoneAndGlass: 0.732,
+                    minerals: 9.10,
+                    metals: 18.5,
+                    chemicalsAndPlastics: 5.57,
+                    transport: 3.61,
+                    machinery: 4.45,
+                    electronics: 3.18,
+                    other: 0.815
+                },
+                {
+                    textilesAndFurniture: 1.69,
+                    foodAndWood: 20.0,
+                    stoneAndGlass: 0.661,
+                    minerals: 7.83,
+                    metals: 16.1,
+                    chemicalsAndPlastics: 4.28,
+                    transport: 1.64,
+                    machinery: 3.41,
+                    electronics: 2.70,
+                    other: 0.359
+                },
+                {
+                    textilesAndFurniture: 1.31,
+                    foodAndWood: 18.0,
+                    stoneAndGlass: 0.413,
+                    minerals: 4.45,
+                    metals: 10.1,
+                    chemicalsAndPlastics: 3.24,
+                    transport: 0.806,
+                    machinery: 2.25,
+                    electronics: 2.08,
+                    other: 0.350
+                },
+                {
+                    textilesAndFurniture: 1.26,
+                    foodAndWood: 16.2,
+                    stoneAndGlass: 0.353,
+                    minerals: 3.61,
+                    metals: 8.07,
+                    chemicalsAndPlastics: 2.35,
+                    transport: 0.498,
+                    machinery: 1.58,
+                    electronics: 2.00,
+                    other: 0.418
+                }
+            ];
+            exportData = exportData.map(function(y) {
+                y["machAndElectronics"] = y["machinery"] + y["electronics"];
+                delete y["machinery"];
+                delete y["electronics"];
+
+                Object.keys(y).map(function(k) {
+                    if ( y[k] < 1 ) {
+                        y[k] = parseFloat(
+                            (Math.round(y[k] * 100) / 100).toFixed(2)
+                        );
+                    }
+                });
+
+                return y;
+            });
+            var sums = exportData.map(function (y) {
+                return Object.values(y).reduce(function(a, b) { return a + b; })
+            });
+            var agriWoodExportData = exportData.map(function(y) {
+                return y["foodAndWood"] / Object.values(y).reduce(
+                    function(a, b) { return a + b; }
+                )
+            });
+
+            var exportColorScale = d3.scaleOrdinal()
+                .range([
+                    colors["lgrey"],
+                    colors["red"],
+                    tinycolor(colors["blue"])
+                        .saturate(dSat)
+                        .toHexString(),
+                    tinycolor(colors["purple"])
+                        .desaturate(dSat)
+                        .toHexString(),
+                    tinycolor(colors["grey"])
+                        .toHexString(),
+                    tinycolor(colors["brown"])
+                        .darken(dLight)
+                        .desaturate(dSat)
+                        .toHexString(),
+                    tinycolor(colors["brown"])
+                        .desaturate(dSat*2)
+                        .lighten(dLight*2)
+                        .toHexString(),
+                    colors["green"],
+                    colors["orange"]
+                ].reverse());
+
+            var stackExport = d3.stack()
+                .keys([
+                    "foodAndWood",
+                    "textilesAndFurniture",
+                    "stoneAndGlass",
+                    "minerals",
+                    "metals",
+                    "chemicalsAndPlastics",
+                    "transport",
+                    "machAndElectronics",
+                    "other"
+                ])(exportData);
+            var offsets = [];
+            stackExport = stackExport.map(function(s, i) {
+                if ( i < 1 ) return s;
+                
+                return s.map(function(a, i) {
+                    if ( i < 19 ) return a;
+
+                    if ( !offsets[i] ) {
+                        offsets[i] = 20 > a[0] ? 20 - a[0] : 0;
+                    }
+
+                    a[0] += offsets[i];
+                    a[1] += offsets[i];
+
+                    return a;
+                });
+            });
+
+            var exportScale = d3.scaleLinear()
+                .domain([0, 90])
+                .range([h-padding, padding]);
+
+            var yAxisExport = d3.axisLeft(exportScale);
+            var yAxisPercent2 = d3.axisRight(percentScale);
+
+            var areaExport = d3.area()
+                .x(function (d, i) {
+                    return timeScale(new Date((1995+i).toString()));
+                })
+                .y0(function (d) { return exportScale(d[0]); })
+                .y1(function (d) { return exportScale(d[1]); });
+
+            var lineAgriWoodExport = d3.line()
+                .x(function (d, i) {
+                    return timeScale(new Date((1995+i).toString()));
+                })
+                .y(function (d) { return percentScale(d); })
+
+            var svg5 = d3.select("#svgs")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+            svg5.selectAll("g")
+                .data(stackExport)
+                .enter()
+                .append("g")
+                .style("fill", function(d, i) {
+                    return exportColorScale(i+1);
+                })
+                .append("path")
+                .attr("d", areaExport);
+
+            svg5.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisExport.tickFormat(locale.format("$0.2r"))
+                        .tickValues(
+                            [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
+                        )
+                );
+
+            svg5.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + (w-paddingR) + ", 0)")
+                .call(
+                    yAxisPercent2.tickFormat(d3.format("0.0%")).tickValues(
+                        [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+                    )
+                );
+
+            svg5.append("g")
+                .attr("class", "grid grid5")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisExport
+                        .tickSize(-(w-paddingR-paddingL+6))
+                        .tickFormat("")
+                );
+
+            svg5.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis5.tickValues(years)
+                        .tickFormat("")
+                        .tickSize(padding)
+                );
+            svg5.append("g")
+                .attr("class", "x grid grid5")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis5.tickValues(years)
+                        .tickSize(-h)
+                        .tickFormat("")
+                );
+            svg5
+                .append("path")
+                .attr("class", "lineAgriWoodExport")
+                .datum(agriWoodExportData)
+                .attr("d", lineAgriWoodExport);
+
+            svg5.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudL + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Експорт товарів");
+
+            svg5.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudR + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Експорт їжі і деревини");
+
+            var focusOther = svg5.append("g").attr("class", "focusOther");
+            var focusMachAndElectronics = svg5.append("g")
+                .attr("class", "focusMachAndElectronics");
+            var focusTransport = svg5.append("g")
+                .attr("class", "focusTransport");
+            var focusChemicalsAndPlastics = svg5.append("g")
+                .attr("class", "focusChemicalsAndPlastics");
+            var focusMetals = svg5.append("g")
+                .attr("class", "focusMetals");
+            var focusMinerals = svg5.append("g")
+                .attr("class", "focusMinerals");
+            var focusStoneAndGlass = svg5.append("g")
+                .attr("class", "focusStoneAndGlass");
+            var focusTextilesAndFurniture = svg5.append("g")
+                .attr("class", "focusTextilesAndFurniture");
+            var focusFoodAndWood = svg5.append("g")
+                .attr("class", "focusFoodAndWood");
+            var focusTotalExport = svg5.append("g")
+                .attr("class", "focusTotalExport");
+
+
+            var fs4 = [
+                focusOther, focusMachAndElectronics, focusTransport,
+                focusChemicalsAndPlastics, focusMetals, focusMinerals,
+                focusStoneAndGlass, focusTextilesAndFurniture, focusFoodAndWood,
+                focusTotalExport
+            ].map(function (f, i) {
+                if ( i < 9 ) {
+                    f.append("circle")
+                        .attr("class", "y")
+                        .attr("r", 2);
+                }
+                f.append("text")
+                    .attr("class", "back");
+                f.append("text")
+                    .attr("class", "fore");
+
+                f.style("display", "none");
+                f.classed("focus", true);
+
+                return f;
+            });
+
+            svg5.append("rect")
+                .attr("transform",
+                      "translate(" + paddingL + "," + padding + ")"
+                )
+                .attr("width", w-paddingR-paddingL)
+                .attr("height", h-padding)
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+
+                    fs4.map(function (f) { f.style("display", "none"); });
+                    highlight(false);
+                })
+                .on("mousemove", function() {
+                    if ( isMobile ) return;
+
+                    var x = timeScale.invert(d3.mouse(this)[0]+paddingL);
+                    if ( parseInt(x.getFullYear()) < 1994 ) {
+                        fs4.map(function (f) { f.style("display", "none"); });
+                        highlight(false);
+
+                        return;
+                    }
+
+                    if ( x.getMonth() < 6 ) {
+                        x = new Date(x.getFullYear().toString());
+                    } else {
+                        x = new Date((x.getFullYear() + 1).toString());
+                    }
+
+                    if ( isHighlighted ) {
+                        highlight(false);
+                    }
+
+                    var i = x.getFullYear()-1990;
+                    if ( i - 5 >= 0 && i - 5 < stackExport[0].length ) {
+                        [botOtherD, topOtherD] = stackExport[8][i-5],
+                        [
+                            botMachAndElectronicsD,
+                            topMachAndElectronicsD
+                        ] = stackExport[7][i-5],
+                        [botTransportD, topTransportD] = stackExport[6][i-5],
+                        [
+                            botChemicalsAndPlasticsD,
+                            topChemicalsAndPlasticsD
+                        ] = stackExport[5][i-5],
+                        [botMetalsD, topMetalsD] = stackExport[4][i-5];
+                        [botMineralsD, topMineralsD] = stackExport[3][i-5];
+                        [
+                            botStoneAndGlassD,
+                            topStoneAndGlassD
+                        ] = stackExport[2][i-5];
+                        [
+                            botTextilesAndFurnitureD,
+                            topTextilesAndFurnitureD
+                        ] = stackExport[1][i-5];
+                        [
+                            botFoodAndWoodD,
+                            topFoodAndWoodD
+                        ] = stackExport[0][i-5];
+                    } else {
+                        return;
+                    }
+
+                    fs4.map(function (f) { f.style("display", null); });
+                    highlight(x);
+
+                    [
+                        [
+                            focusTotalExport,
+                            [12, sums[i-5]+12],
+                            exportScale,
+                            15,
+                            0,
+                            colors["black"]
+                        ],
+                        [
+                            focusMachAndElectronics,
+                            [botMachAndElectronicsD, topMachAndElectronicsD],
+                            exportScale,
+                            -5,
+                            -3,
+                            colors["red"]
+                        ],
+                        [
+                            focusTransport,
+                            [botTransportD, topTransportD],
+                            exportScale,
+                            36,
+                            -3,
+                            colors["blue"]
+                        ],
+                        [
+                            focusChemicalsAndPlastics,
+                            [
+                                botChemicalsAndPlasticsD,
+                                topChemicalsAndPlasticsD
+                            ],
+                            exportScale,
+                            -5,
+                            2,
+                            colors["purple"]
+                        ],
+                        [
+                            focusMetals,
+                            [botMetalsD, topMetalsD],
+                            exportScale,
+                            36,
+                            2,
+                            colors["grey"]
+                        ],
+                        [
+                            focusMinerals,
+                            [botMineralsD, topMineralsD],
+                            exportScale,
+                            -5,
+                            2,
+                            colors["brown"]
+                        ],
+                        [
+                            focusFoodAndWood,
+                            [botFoodAndWoodD, topFoodAndWoodD],
+                            exportScale,
+                            36,
+                            2,
+                            colors["orange"]
+                        ]
+                    ].map(function (f, i) {
+                        var y = x.getFullYear();
+                        if ( y == 1995 ) {
+                            if ( i == 5 || i == 6 ) {
+                                f[4] += 3;
+                            } else if ( i == 3 || i == 4 ) {
+                                f[4] += 1;
+                            } else if ( i == 1 ) {
+                                f[4] -= 2;
+                            }
+                        } else if ( y > 1998 && y < 2003 ) {
+                            if ( i == 1 || i == 2 ) {
+                                f[4] -= 2;
+                            }
+                        } else if ( y == 2016 && i == 2 ) {
+                            f[4] -= 7;
+                        }
+                        if ( y > 2002 && !(i % 2) ) {
+                            f[3] -= 5;
+
+                            if ( y > 2014 && i == 2 ) {
+                                f[3] += 6;
+                            }
+                        }
+                        var v = timeScale(new Date("1998"))/timeScale(x);
+
+                        ["text.back", "text.fore"].map(function (t) {
+                            f[0].select(t)
+                                .attr(
+                                    "transform",
+                                    "translate(" + (timeScale(x)-f[3]) + "," +
+                                                    (f[2](f[1][1])+f[4]*v) + ")"
+                                )
+                                .text(
+                                    locale.format("$.2r")(f[1][1]-f[1][0])
+                                )
+                                .attr("fill", f[5]);
+                        });
+                        if ( i < 1 ) return;
+
+                        f[0].select("circle.y")
+                            .attr(
+                                "transform",
+                                "translate(" + timeScale(x) + "," +
+                                               f[2](f[1][1]) + ")"
+                            );
+                    });
+                });
+
+            var legendScale5 = d3.scaleOrdinal()
+                .domain([
+                    "Інше",
+                    "Машинерія і електроніка",
+                    "Транспортні засоби",
+                    "Хімікати і пластик",
+                    "Метали",
+                    "Мінерали",
+                    "Каміння і скло",
+                    "Текстиль і меблі",
+                    "Їжа і деревина"
+                ])
+                .range(
+                    exportColorScale.range().reverse()
+                );
+            var legend5 = d3.legendColor()
+                .orient("vertical")
+                .labelWrap(280)
+                .title("Склад експорту")
+                .titleWidth(200)
+                .labelOffset(5)
+                .scale(legendScale5);
+
+            svg5.append("g")
+            .attr("class", "legend")
+            .attr("transform",
+                "translate(" + (w-paddingR+paddingL) + ", " + (padding+10) + ")"
+            )
+            .call(legend5);
+
+            /// ELECTRICITY
+
+            var electroData = [
+                {
+                    russia: 1082152,
+                    germany: 550015,
+                    poland: 136311,
+                    ukraine: 298835,
+                    china: 621268,
+                    india: 292732,
+                    usa: 3218621 
+                }, //1990
+                {
+                    russia: 1068163,
+                    germany: 539634,
+                    poland: 134714,
+                    ukraine: 278683,
+                    china: 709432,
+                    india: 319256,
+                    usa: 3275840
+                },
+                {
+                    russia: 1008450,
+                    germany: 537470,
+                    poland: 132750,
+                    ukraine: 252524,
+                    china: 754071,
+                    india: 337181,
+                    usa: 3291109 
+                },
+                {
+                    russia: 956587,
+                    germany: 526276,
+                    poland: 133867,
+                    ukraine: 229906,
+                    china: 874349,
+                    india: 360845,
+                    usa: 3411280
+                },
+                {
+                    russia: 875914,
+                    germany: 529160,
+                    poland: 135347,
+                    ukraine: 202922,
+                    china: 928245,
+                    india: 390813,
+                    usa: 3473435
+                },
+                {
+                    russia: 860027,
+                    germany: 537284,
+                    poland: 139006,
+                    ukraine: 194018,
+                    china: 1035830,
+                    india: 423660,
+                    usa: 3582114
+                },
+                {
+                    russia: 847183,
+                    germany: 555372,
+                    poland: 143173,
+                    ukraine: 182986,
+                    china: 1080240,
+                    india: 443031,
+                    usa: 3677022
+                },
+                {
+                    russia: 834132,
+                    germany: 551554,
+                    poland: 142790,
+                    ukraine: 178002,
+                    china: 1164833,
+                    india: 472678,
+                    usa: 3697728
+                },
+                {
+                    russia: 827158,
+                    germany: 556393,
+                    poland: 142789,
+                    ukraine: 172822,
+                    china: 1167500,
+                    india: 503751,
+                    usa: 3830489
+                },
+                {
+                    russia: 846226,
+                    germany: 556300,
+                    poland: 142128,
+                    ukraine: 172120,
+                    china: 1269425,
+                    india: 545770,
+                    usa: 3897518
+                },
+                {
+                    russia: 877766,
+                    germany: 576543,
+                    poland: 145184,
+                    ukraine: 171445,
+                    china: 1355738,
+                    india: 569688,
+                    usa: 4052667
+                },
+                {
+                    russia: 891284,
+                    germany: 586406,
+                    poland: 145616,
+                    ukraine: 172972,
+                    china: 1513381,
+                    india: 588171,
+                    usa: 3865307
+                },
+                {
+                    russia: 891285,
+                    germany: 586694,
+                    poland: 144126,
+                    ukraine: 173734,
+                    china: 1654164,
+                    india: 610502,
+                    usa: 4051120
+                },
+                {
+                    russia: 916286,
+                    germany: 608779,
+                    poland: 151631,
+                    ukraine: 180360,
+                    china: 1946264,
+                    india: 650837,
+                    usa: 4081764
+                },
+                {
+                    russia: 931865,
+                    germany: 617469,
+                    poland: 154159,
+                    ukraine: 182165,
+                    china: 2203502,
+                    india: 683991,
+                    usa: 4174856
+                },
+                {
+                    russia: 953086,
+                    germany: 622579,
+                    poland: 156936,
+                    ukraine: 186055,
+                    china: 2538917,
+                    india: 715656,
+                    usa: 4294368
+                },
+                {
+                    russia: 995794,
+                    germany: 639492,
+                    poland: 161742,
+                    ukraine: 193381,
+                    china: 2865954,
+                    india: 773784,
+                    usa: 4300831
+                },
+                {
+                    russia: 1015333,
+                    germany: 640578,
+                    poland: 159348,
+                    ukraine: 196251,
+                    china: 3281790,
+                    india: 823563,
+                    usa: 4349841
+                },
+                {
+                    russia: 1040379,
+                    germany: 640406,
+                    poland: 155305,
+                    ukraine: 192586,
+                    china: 3467185,
+                    india: 848355,
+                    usa: 4368261
+                },
+                {
+                    russia: 991980,
+                    germany: 595617,
+                    poland: 151720,
+                    ukraine: 173619,
+                    china: 3715061,
+                    india: 917302,
+                    usa: 4188215
+                },
+                {
+                    russia: 1038030,
+                    germany: 632983,
+                    poland: 157657,
+                    ukraine: 188828,
+                    china: 4207993,
+                    india: 979416,
+                    usa: 4378430
+                },
+                {
+                    russia: 1054765,
+                    germany: 613068,
+                    poland: 163548,
+                    ukraine: 194948,
+                    china: 4754869,
+                    india: 1074536,
+                    usa: 4349463
+                },
+                {
+                    russia: 1070734,
+                    germany: 629812,
+                    poland: 162139,
+                    ukraine: 198878,
+                    china: 4994045,
+                    india: 1123049,
+                    usa: 4290660
+                },
+                {
+                    russia: 1059092,
+                    germany: 638729,
+                    poland: 164580,
+                    ukraine: 194377,
+                    china: 5486405,
+                    india: 1190952,
+                    usa: 4306371
+                },
+                {
+                    russia: 1064207,
+                    germany: 627795,
+                    poland: 159059,
+                    ukraine: 182818,
+                    china: 5678945,
+                    india: 1293682,
+                    usa: 4339210
+                }, //2014
+                {
+                    russia: 1067544,
+                    germany: 646888,
+                    poland: 164944,
+                    ukraine: 163682,
+                    china: 5897988,
+                    india: 1383004,
+                    usa: 4317159
+                },
+                {
+                    ukraine: 164600
+                },
+            ];
+
+            electroData.map(function(y, i) {
+                Object.keys(y).map(function(k) {
+                    electroData[i][k] /= 1000;
+                });
+            });
+
+            var electroScale = d3.scaleLog()
+                .base(2)
+                .domain([128, 1024])
+                .range([h-padding, padding]);
+            var electroScaleB = d3.scaleLog()
+                .base(2)
+                .domain([1024, 8192])
+                .range([h-padding, padding]);
+
+            var yAxisElectro = d3.axisLeft(electroScale);
+            var yAxisElectroB = d3.axisRight(electroScaleB);
+
+            var electroLines = [
+                "russia", "germany", "poland", "ukraine", "china", "india"
+            ].map(
+                function (c) {
+                    return d3.line()
+                        .x(function(d, i) {
+                            return timeScale(new Date((1990+i).toString()));
+                        })
+                        .y(function (d) {
+                            return electroScale(d[c]);
+                        });
+                }
+            );
+            var electroLinesB = [
+                "russia", "usa", "china", "india"
+            ].map(
+                function (c) {
+                    return d3.line()
+                        .curve(d3.curveMonotoneX)
+                        .x(function(d, i) {
+                            return timeScale(new Date((1990+i).toString()));
+                        })
+                        .y(function (d) {
+                            return electroScaleB(d[c]);
+                        });
+                }
+            );
+
+            var svg6 = d3.select("#svgs")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+            svg6
+                .append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisElectro.tickValues(
+                        [128, 256, 512, 1024]
+                    )
+                );
+            svg6
+                .append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + (w-paddingR) + ", 0)")
+                .call(
+                    yAxisElectroB.tickValues(
+                        [1024, 2048, 4096, 8192]
+                    )
+                );
+            svg6.append("g")
+                .attr("class", "y grid grid6")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisElectro
+                        .tickSize(-(w-paddingR-paddingL+6))
+                        .tickFormat("")
+                );
+
+            svg6.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis6.tickValues(years)
+                        .tickFormat("")
+                        .tickSize(padding) 
+                );
+            svg6.append("g")
+                .attr("class", "x grid grid6")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis6.tickValues(years)
+                        .tickSize(-h)
+                        .tickFormat("")
+                );
+
+            [
+                "russia", "usa", "china", "india"
+            ].map(function (c, i) {
+                svg6.append("path")
+                    .attr("class", "lineElectroB"+c.charAt(0).toUpperCase())
+                    .datum(electroData)
+                    .attr("d", electroLinesB[i])
+            });
+
+            [
+                "russia", "germany", "poland", "ukraine", "china", "india"
+            ].map(function (c, i) {
+                svg6.append("path")
+                    .attr("class", "lineElectro"+c.charAt(0).toUpperCase())
+                    .datum(electroData)
+                    .attr("d", electroLines[i]);
+            });
+
+            var focusElectroR = svg6.append("g").attr("class", "focusElectroR");
+            var focusElectroG = svg6.append("g").attr("class", "focusElectroG");
+            var focusElectroP = svg6.append("g").attr("class", "focusElectroP");
+            var focusElectroU = svg6.append("g").attr("class", "focusElectroU");
+            var focusElectroI = svg6.append("g").attr("class", "focusElectroI");
+            var focusElectroC = svg6.append("g").attr("class", "focusElectroC");
+            var focusElectroBR = svg6.append("g")
+                .attr("class", "focusElectroBR");
+            var focusElectroBC = svg6.append("g")
+                .attr("class", "focusElectroBC");
+            var focusElectroBI = svg6.append("g")
+                .attr("class", "focusElectroBI");
+            var focusElectroBU = svg6.append("g")
+                .attr("class", "focusElectroBU");
+
+            var fs5 = [
+                focusElectroR, focusElectroG, focusElectroP, focusElectroU,
+                focusElectroI, focusElectroC, focusElectroBR, focusElectroBC,
+                focusElectroBI, focusElectroBU
+            ].map(function (f) {
+                f.append("circle").attr("class", "y").attr("r", 2);
+                f.append("text").attr("class", "back");
+                f.append("text").attr("class", "fore");
+
+                f.style("display", "none");
+                f.classed("focus", true);
+
+                return f;
+            });
+
+            svg6.append("rect")
+                .attr("transform",
+                      "translate(" + paddingL + "," + padding + ")")
+                .attr("width", w-paddingR-paddingL)
+                .attr("height", h-padding)
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+
+                    fs5.map(function (f) { f.style("display", "none"); });
+
+                    highlight(false);
+                })
+                .on("mousemove", function() {
+                    if ( isMobile ) return;
+
+                    var x = timeScale.invert(d3.mouse(this)[0]+paddingL),
+                        i,
+                        electroR,
+                        electroG,
+                        electroP,
+                        electroU,
+                        electroC,
+                        electroI,
+                        electroUS;
+
+                    if ( x.getMonth() < 6 ) {
+                        x = new Date(x.getFullYear().toString());
+                    } else {
+                        x = new Date((x.getFullYear() + 1).toString());
+                    }
+                    i = x.getFullYear() - 1990;
+                    if ( i < electroData.length ) {
+                        electroU = electroData[i]["ukraine"];
+                    }
+                    if ( i < electroData.length - 1 ) {
+                        electroR = electroData[i]["russia"];
+                        electroG = electroData[i]["germany"];
+                        electroP = electroData[i]["poland"];
+                        electroC = electroData[i]["china"];
+                        electroI = electroData[i]["india"];
+                        electroUS = electroData[i]["usa"];  
+                    }
+
+                    fs5.map(function (f) { f.style("display", null); });
+                    if ( isHighlighted ) {
+                        highlight(false);
+                    }
+                    highlight(x);
+
+                    [
+                        [
+                            focusElectroR, electroR, electroScale, 30,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroG, electroG, electroScale, 30,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroP, electroP, electroScale, 30,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroU, electroU, electroScale, 30,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroC, electroC, electroScale, -4,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroI, electroI, electroScale, -4,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroBR, electroR, electroScaleB, 30,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroBC, electroC, electroScaleB, -4,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroBI, electroI, electroScaleB, -4,
+                            d3.format("0.4r")
+                        ],
+                        [
+                            focusElectroBU, electroUS, electroScaleB, 30,
+                            d3.format("0.4r")
+                        ]
+                    ].map(function (f, i) {
+                        if ( !f[1] ) {
+                            f[0].style("display", "none");
+                            return;
+                        } else {
+                            f[0].style("display", null);
+                        }
+                        var o = 0;
+                        if ( i == 6 || i == 7 && x.getFullYear() < 1994 ) o = 8;
+
+                        ["text.back", "text.fore"].map(function (t) {
+                            f[0].select(t)
+                                .attr(
+                                    "transform",
+                                    "translate(" + (timeScale(x)-f[3]) + "," +
+                                                    (f[2](f[1])+o) + ")"
+                                )
+                                .text(f[4](f[1]));
+                            });
+                        f[0].select("circle.y")
+                            .attr(
+                                "transform",
+                                "translate(" + timeScale(x) + "," +
+                                               f[2](f[1]) + ")"
+                            );
+                    });
+                });
+
+            svg6.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudL + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Млрд. кВт⋅год");
+            svg6.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudR + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Млрд. кВт⋅год");
+
+            var legendScale6 = d3.scaleOrdinal()
+                .domain([
+                    "Китай",
+                    "США",
+                    "Індія",
+                    "Росія",
+                    "Німеччина",
+                    "Україна",
+                    "Польща"
+                ])
+                .range([
+                    colors["purple"],
+                    tinycolor(colors["orange"])
+                        .saturate(dSat)
+                        .lighten(dLight)
+                        .toHexString(),
+                    colors["green"], colors["red"],
+                    colors["blue"],
+                    tinycolor(colors["orange"])
+                        .desaturate(dSat)
+                        .darken(dLight)
+                        .toHexString(),
+                    colors["lgrey"]
+                ]);
+            var legend6 = d3.legendColor()
+                .orient("vertical")
+                .labelWrap(280)
+                .title("Генерація електрики")
+                .titleWidth(200)
+                .labelOffset(5)
+                .scale(legendScale6);
+
+            svg6.append("g")
+            .attr("class", "legend")
+            .attr("transform",
+                "translate(" + (w-paddingR+paddingL) + ", " + (padding+10) + ")"
+            )
+            .call(legend6);
+
+            /// WAR
+
+            var occupationData = [
+                {georgia: 0, ukraine: 0, azerbaijan: 0, moldova: 0},
+                {georgia: 0, ukraine: 0, azerbaijan: 0, moldova: 0},
+                {georgia: 0, ukraine: 0, azerbaijan: 0, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 0, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 0, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 0, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 44000, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 44000, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 44000, azerbaijan: 11797, moldova: 4163},
+                {georgia: 12560, ukraine: 44000, azerbaijan: 11797, moldova: 4163}
+            ];
+
+            var occuSums = occupationData.map(function (y) {
+                return Object.values(y).reduce(function (a,b) {return a + b;});
+            });
+
+            var killedData = [
+                0,
+                0,
+                480,
+                480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                25480,
+                26210,
+                26210,
+                26210,
+                26210,
+                26210,
+                26210,
+                30917,
+                35325,
+                35968,
+                36513
+            ];
+
+            var colorsOccupation = [
+                colors["red"], colors["green"], colors["blue"], colors["orange"]
+            ];
+
+            var stackOccupation = d3.stack()
+                .keys(["moldova", "azerbaijan", "georgia", "ukraine"])
+                (occupationData);
+
+            var occuScale = d3.scaleLinear()
+                .domain([0, 75000])
+                .range([h-padding, padding]);
+            var killedScale = d3.scaleLinear()
+                .domain([0, 45000])
+                .range([h-padding, padding]);
+
+            var yAxisOccu = d3.axisRight(occuScale);
+            var yAxisDead = d3.axisLeft(killedScale);
+
+            var areaOccupation = d3.area()
+                .x(function(d, i) {
+                    return timeScale(new Date((1990+i).toString()));
+                })
+                .y0(function(d) { return occuScale(d[0]); })
+                .y1(function(d) { return occuScale(d[1]); });
+
+            var lineKilled = d3.line()
+                .x(function(d, i) {
+                    return timeScale(new Date((1990+i).toString()));
+                })
+                .y(function(d) { return killedScale(d); });
+
+
+            var svg7 = d3.select("#svgs")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+
+            svg7.selectAll("g")
+                .data(stackOccupation)
+                .enter()
+                .append("g")
+                .attr("class", function(d) {return d["key"];})
+                .style("fill", function(d, i) {
+                    return colorsOccupation[i];
+                })
+                .append("path")
+                .attr("d", areaOccupation);
+
+            svg7
+                .append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + (w-paddingR) + ", 0)")
+                .call(
+                    yAxisOccu.tickFormat(d3.format("0.2s"))
+                        .tickValues([
+                            10000, 20000, 30000, 40000, 50000, 60000, 70000
+                        ])
+                );
+            svg7
+                .append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisDead.tickValues([
+                            6000, 12000, 18000, 24000, 30000, 36000, 42000
+                        ])
+                        .tickFormat(d3.format(".2s"))
+                );
+            svg7.append("g")
+                .attr("class", "y grid grid7")
+                .attr("transform", "translate(" + paddingL + ", 0)")
+                .call(
+                    yAxisOccu
+                        .tickSize(w-paddingR-paddingL+6)
+                        .tickFormat("")
+                );
+
+            svg7.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis7.tickValues(years)
+                        .tickFormat("")
+                        .tickSize(padding)
+                );
+            svg7.append("g")
+                .attr("class", "x grid grid7")
+                .attr("transform", "translate(0," + padding + ")")
+                .call(
+                    xAxis7.tickValues(years)
+                        .tickSize(-h)
+                        .tickFormat("")
+                );
+            svg7.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + (h-padding) + ")")
+                .call(
+                    xAxis8.tickValues(years)
+                    .tickFormat(d3.timeFormat("%Y"))
+                );
+            svg7.append("path")
+                .attr("class", "lineKilled")
+                .datum(killedData)
+                .attr("d", lineKilled);
+
+            var focusTotalOccu = svg7.append("g")
+                .attr("class", "focusTotalOccu");
+            var focusOccuMold = svg7.append("g")
+                .attr("class", "focusOccuMold");
+            var focusOccuAzer = svg7.append("g")
+                .attr("class", "focusOccuAzer");
+            var focusOccuGeor = svg7.append("g")
+                .attr("class", "focusOccuGeor");
+            var focusOccuUkr = svg7.append("g")
+                .attr("class", "focusOccuUkr");
+            var focusKilled = svg7.append("g")
+                .attr("class", "focusKilled");
+
+            var fs6 = [
+                    focusTotalOccu, focusOccuMold, focusOccuAzer, focusOccuGeor,
+                    focusOccuUkr, focusKilled
+            ].map(function (f) {
+                f.append("circle").attr("class", "y").attr("r", 2);
+                f.append("text").attr("class", "back");
+                f.append("text").attr("class", "fore");
+
+                f.style("display", "none");
+                f.classed("focus", true);
+
+                return f;
+            });
+
+            svg7.append("rect")
+                .attr("transform",
+                      "translate(" + paddingL + "," + padding + ")")
+                .attr("width", w-paddingR-paddingL)
+                .attr("height", h-padding)
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .on("mouseenter", function() {
+                    if ( isMobile ) return;
+
+                    fs6.map(function (f) { f.style("display", null); });
+                })
+                .on("mouseout", function() {
+                    if ( isMobile ) return;
+
+                    fs6.map(function (f) { f.style("display", "none"); });
+
+                    highlight(false);
+                })
+                .on("mousemove", function() {
+                    if ( isMobile ) return;
+
+                    var x = timeScale.invert(d3.mouse(this)[0]+paddingL);
+
+                    if ( x.getMonth() < 6 ) {
+                        x = new Date(x.getFullYear().toString());
+                    } else {
+                        x = new Date((x.getFullYear() + 1).toString());
+                    }
+                    var i = x.getFullYear() - 1990;
+
+                    var occuSum = occuSums[i],
+                    [botOccuMoldD, topOccuMoldD] = stackOccupation[0][i],
+                    [botOccuAzerD, topOccuAzerD] = stackOccupation[1][i],
+                    [botOccuGeorD, topOccuGeorD] = stackOccupation[2][i],
+                    [botOccuUkrD, topOccuUkrD] = stackOccupation[3][i],
+                    killedD = killedData[i];
+
+                    if ( isHighlighted ) {
+                        highlight(false);
+                    }
+                    highlight(x);
+
+                    [
+                        [
+                            focusTotalOccu,
+                            [5500, topOccuUkrD+5500],
+                            occuScale,
+                            -4
+                        ],
+                        [
+                            focusOccuMold,
+                            [botOccuMoldD, topOccuMoldD],
+                            occuScale,
+                            -4
+                        ],
+                        [
+                            focusOccuAzer,
+                            [botOccuAzerD, topOccuAzerD],
+                            occuScale,
+                            -4
+                        ],
+                        [
+                            focusOccuGeor,
+                            [botOccuGeorD, topOccuGeorD],
+                            occuScale,
+                            -4
+                        ],
+                        [
+                            focusOccuUkr,
+                            [botOccuUkrD, topOccuUkrD],
+                            occuScale,
+                            -4
+                        ],
+                        [
+                            focusKilled,
+                            [0, killedD],
+                            killedScale,
+                            35
+                        ]
+                    ].map(function (f, i) {
+                        if ( f[1][1] - f[1][0] == 0 ) {
+                            f[0].attr("display", "none");
+                            return;
+                        } else {
+                            f[0].attr("display", null);
+                        }
+
+                        var s = p = "";
+                        if ( i < 5 ) {
+                            p = " км²";
+                        } else if ( i == 5 && x.getFullYear() < 1994 ) {
+                            f[3] -= 12;
+                        }
+                        ["text.back", "text.fore"].map(function (t) {
+                            f[0].select(t)
+                                .attr(
+                                    "transform",
+                                    "translate(" + (timeScale(x)-f[3]) + "," +
+                                                    (f[2](f[1][1])) + ")"
+                                )
+                                .text(
+                                    (f[1][1]-f[1][0]) + p
+                                );
+                        });
+                        if ( i < 1 ) return;
+
+                        f[0].select("circle.y")
+                            .attr(
+                                "transform",
+                                "translate(" + timeScale(x) + "," +
+                                               f[2](f[1][1]) + ")"
+                            );
+                    });
+                });
+
+            svg7.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudL + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Вбиті на війні");
+
+            svg7.append("text")
+                .attr("text-anchor", "middle")
+                .attr("transform",
+                      "translate(" + cloudR + ", " + (h/2) + ")" +
+                      "rotate(-90)"
+                )
+                .attr("class", "cloudy")
+                .text("Окупована територія, км²");
+
+            var legendScale7 = d3.scaleOrdinal()
+                .domain([
+                    "Грузія",
+                    "Україна",
+                    "Азербайджан",
+                    "Молдова",
+                    "Вбиті на війні"
+                ])
+                .range([
+                    colors["blue"], colors["orange"], colors["green"],
+                    colors["red"], colors["black"]
+                ]);
+            var legend7 = d3.legendColor()
+                .orient("vertical")
+                .labelWrap(280)
+                .title("Відносини з Росією")
+                .titleWidth(200)
+                .labelOffset(5)
+                .scale(legendScale7);
+
+            svg7.append("g")
+            .attr("class", "legend")
+            .attr("transform",
+                "translate(" + (w-paddingR+paddingL) + ", " + (padding+10) + ")"
+            )
+            .call(legend7);
+
+            //
+
+            var boldTicks = [];
+            var highl = [];
+            var isHighlighted = false;
+            function highlight(x) {
+                    if ( x == false ) {
+                        boldTicks.map(function (b) {
+                            b.classed("boldTick", false);
+                        });
+                        highl.map(function (h) { h.classed("highl", false); });
+                    } else {
+                        [svg, svg7].map(function(s, i) {
+                            boldTicks[i] = s.selectAll(".x.axis > .tick")
+                            .filter(function (d) {
+                                return d.getFullYear() == x.getFullYear();
+                            }).selectAll("text")
+                            .classed("boldTick", true);
+                        });
+                        svgs.map(function (s, i) {
+                            highl[i] = s
+                                .selectAll(".x.grid .tick, .x.axis .tick")
+                                .filter(function (d) {
+                                    return d.getFullYear() == x.getFullYear();
+                                }).selectAll("line")
+                                .classed("highl", true);
+                        });
+                        isHighlighted = true;
+                    }
+            }
+
+            svgs = [svg, svg2, svg3, svg4, svg5, svg6, svg7];
+
+            svgs.map(function(s) {
+                s.select(".legendCells")
+                    .attr("transform", "translate(0, 8)");
+            });
+
+            svg7.selectAll(".cell").filter(function (d, i) { return i == 4; })
+                .attr("transform", "translate(0, 81)");
+
+            svg2.selectAll(".cell").filter(function (d, i) { return i == 5; })
+                .attr("transform", "translate(0, 99)");
+
+            svgs.map(function (s) {
+                s.selectAll(".x.grid .tick, .x.axis .tick")
+                .filter(function (d) {
+                    return d.getFullYear() == "1990" ||
+                        d.getFullYear() == "2017";
+                }).selectAll("line")
+                .style("display", "none");
+            });
+
+        </script>
+    </body>
+</html>
